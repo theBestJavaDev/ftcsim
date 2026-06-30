@@ -12,9 +12,7 @@
   --ice:#d9f7ff;
   --danger:#ff4d6d;
   --glass:rgba(4,14,24,.72);
-  --glass2:rgba(3,10,16,.88);
   --line:rgba(102,243,255,.32);
-  --line2:rgba(255,255,255,.08);
 }
 *{
   box-sizing:border-box;
@@ -305,11 +303,11 @@ html,body{
   height:100%;
   background:linear-gradient(90deg,#7dd3fc,#67e8f9,#d9f7ff);
 }
-#debug{display:none}
 </style>
 <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
 </head>
 <body>
+
 <div id="loading">
   <div class="spinner"></div>
   <div id="loading-text">GENERATING ARCTIC SEABED...</div>
@@ -366,59 +364,58 @@ html,body{
 <div id="canvas-container"></div>
 
 <script>
-const CONFIG={
-  mapSize:1400,
-  mapSegments:280,
-  seaLevel:92,
-  playerRadius:1.4,
-  worldSeed:1337,
-  terrainAmplitude:52,
-  terrainFloor:-180,
-  floraKelp:520,
-  floraCoral:260,
-  floraIce:180,
-  particles:12000,
-  scanTime:1.5,
-  oxygenDrain:2.2,
-  oxygenSurfaceRegen:22,
-  coldDrain:2.0,
-  thermalRegen:10,
-  collisionBuffer:0.15,
-  biomeBand:160
+const CONFIG = {
+  mapSize: 1400,
+  mapSegments: 280,
+  seaLevel: 92,
+  playerRadius: 1.4,
+  worldSeed: 1337,
+  terrainAmplitude: 52,
+  terrainFloor: -180,
+  floraKelp: 520,
+  floraCoral: 260,
+  floraIce: 180,
+  particles: 12000,
+  scanTime: 1.5,
+  oxygenDrain: 2.2,
+  oxygenSurfaceRegen: 22,
+  coldDrain: 2.0,
+  thermalRegen: 10,
+  collisionBuffer: 0.15
 };
 
-const Noise={
-  p:[],
-  init(seed){
-    let s=seed>>>0;
-    const r=()=>((s=(s*1664525+1013904223)>>>0)&0xffffffff)/0x100000000;
-    let perm=[...Array(256)].map(()=>Math.floor(r()*256));
-    this.p=new Array(512);
-    for(let i=0;i<512;i++) this.p[i]=perm[i&255];
+const Noise = {
+  p: [],
+  init(seed) {
+    let s = seed >>> 0;
+    const r = () => ((s = (s * 1664525 + 1013904223) >>> 0) & 0xffffffff) / 0x100000000;
+    let perm = [...Array(256)].map(() => Math.floor(r() * 256));
+    this.p = new Array(512);
+    for (let i = 0; i < 512; i++) this.p[i] = perm[i & 255];
   },
-  fade:t=>t*t*t*(t*(t*6-15)+10),
-  lerp:(t,a,b)=>a+t*(b-a),
-  grad(hash,x,y,z){
-    let h=hash&15;
-    let u=h<8?x:y;
-    let v=h<4?y:h===12||h===14?x:z;
-    return ((h&1)===0?u:-u)+((h&2)===0?v:-v);
+  fade: t => t * t * t * (t * (t * 6 - 15) + 10),
+  lerp: (t, a, b) => a + t * (b - a),
+  grad(hash, x, y, z) {
+    let h = hash & 15;
+    let u = h < 8 ? x : y;
+    let v = h < 4 ? y : h === 12 || h === 14 ? x : z;
+    return ((h & 1) === 0 ? u : -u) + ((h & 2) === 0 ? v : -v);
   },
-  get(x,y,z){
-    let X=Math.floor(x)&255,Y=Math.floor(y)&255,Z=Math.floor(z)&255;
-    x-=Math.floor(x); y-=Math.floor(y); z-=Math.floor(z);
-    let u=this.fade(x),v=this.fade(y),w=this.fade(z),
-        A=this.p[X]+Y,AA=this.p[A]+Z,AB=this.p[A+1]+Z,
-        B=this.p[X+1]+Y,BA=this.p[B]+Z,BB=this.p[B+1]+Z;
+  get(x, y, z) {
+    let X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
+    x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
+    let u = this.fade(x), v = this.fade(y), w = this.fade(z),
+      A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z,
+      B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
     return this.lerp(
       w,
       this.lerp(v,
-        this.lerp(u,this.grad(this.p[AA],x,y,z),this.grad(this.p[BA],x-1,y,z)),
-        this.lerp(u,this.grad(this.p[AB],x,y-1,z),this.grad(this.p[BB],x-1,y-1,z))
+        this.lerp(u, this.grad(this.p[AA], x, y, z), this.grad(this.p[BA], x - 1, y, z)),
+        this.lerp(u, this.grad(this.p[AB], x, y - 1, z), this.grad(this.p[BB], x - 1, y - 1, z))
       ),
       this.lerp(v,
-        this.lerp(u,this.grad(this.p[AA+1],x,y,z-1),this.grad(this.p[BA+1],x-1,y,z-1)),
-        this.lerp(u,this.grad(this.p[AB+1],x,y-1,z-1),this.grad(this.p[BB+1],x-1,y-1,z-1))
+        this.lerp(u, this.grad(this.p[AA + 1], x, y, z - 1), this.grad(this.p[BA + 1], x - 1, y, z - 1)),
+        this.lerp(u, this.grad(this.p[AB + 1], x, y - 1, z - 1), this.grad(this.p[BB + 1], x - 1, y - 1, z - 1))
       )
     );
   }
@@ -426,487 +423,438 @@ const Noise={
 
 Noise.init(CONFIG.worldSeed);
 
-const container=document.getElementById('canvas-container');
-const scene=new THREE.Scene();
-const waterColor=new THREE.Color(0x041827);
-scene.background=waterColor;
-scene.fog=new THREE.FogExp2(waterColor,0.0068);
+const container = document.getElementById('canvas-container');
+const scene = new THREE.Scene();
+const waterColor = new THREE.Color(0x041827);
+scene.background = waterColor;
+scene.fog = new THREE.FogExp2(waterColor, 0.0068);
 
-const camera=new THREE.PerspectiveCamera(70,window.innerWidth/window.innerHeight,0.1,2200);
-camera.position.set(0,CONFIG.seaLevel-6,0);
+const camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 2200);
+camera.position.set(0, CONFIG.seaLevel - 6, 0);
 
-const renderer=new THREE.WebGLRenderer({antialias:true});
-renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.setPixelRatio(Math.min(devicePixelRatio,2));
-renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-renderer.toneMapping=THREE.ACESFilmicToneMapping;
-renderer.toneMappingExposure=1.0;
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 container.appendChild(renderer.domElement);
 
-const ambient=new THREE.AmbientLight(0x0d2f46,1.45);
+const ambient = new THREE.AmbientLight(0x0d2f46, 1.45);
 scene.add(ambient);
 
-const sun=new THREE.DirectionalLight(0xd9fbff,2.2);
-sun.position.set(120,240,80);
-sun.castShadow=true;
-sun.shadow.mapSize.set(2048,2048);
-sun.shadow.camera.near=8;
-sun.shadow.camera.far=550;
-const d=260;
-Object.assign(sun.shadow.camera,{left:-d,right:d,top:d,bottom:-d});
+const sun = new THREE.DirectionalLight(0xd9fbff, 2.2);
+sun.position.set(120, 240, 80);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.near = 8;
+sun.shadow.camera.far = 550;
+const d = 260;
+Object.assign(sun.shadow.camera, { left: -d, right: d, top: d, bottom: -d });
 scene.add(sun);
 
-const moonGlow=new THREE.DirectionalLight(0x7dd3fc,.7);
-moonGlow.position.set(-180,180,-120);
+const moonGlow = new THREE.DirectionalLight(0x7dd3fc, 0.7);
+moonGlow.position.set(-180, 180, -120);
 scene.add(moonGlow);
 
-const hemisphere=new THREE.HemisphereLight(0x9be7ff,0x04111a,.9);
+const hemisphere = new THREE.HemisphereLight(0x9be7ff, 0x04111a, 0.9);
 scene.add(hemisphere);
 
-function fbm(x,z){
-  let total=0,amp=1,freq=.005;
-  for(let i=0;i<5;i++){
-    total+=Noise.get(x*freq,0,z*freq)*amp;
-    freq*=2.2;
-    amp*=.48;
+function fbm(x, z) {
+  let total = 0, amp = 1, freq = 0.005;
+  for (let i = 0; i < 5; i++) {
+    total += Noise.get(x * freq, 0, z * freq) * amp;
+    freq *= 2.2;
+    amp *= 0.48;
   }
   return total;
 }
 
-function ridge(x,z){
-  let n=Math.abs(fbm(x,z));
-  return 1-Math.pow(n,1.7);
+function ridge(x, z) {
+  let n = Math.abs(fbm(x, z));
+  return 1 - Math.pow(n, 1.7);
 }
 
-function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
-function smoothstep(a,b,x){
-  x=clamp((x-a)/(b-a),0,1);
-  return x*x*(3-2*x);
+function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+function smoothstep(a, b, x) {
+  x = clamp((x - a) / (b - a), 0, 1);
+  return x * x * (3 - 2 * x);
 }
-function getDepthFromSurface(y){ return CONFIG.seaLevel-y; }
-function getDistance2D(x,z){ return Math.hypot(x,z); }
+function getDepthFromSurface(y) { return CONFIG.seaLevel - y; }
+function getDistance2D(x, z) { return Math.hypot(x, z); }
 
-function getBiome(x,z,y){
-  let d=getDistance2D(x,z);
-  let depth=getDepthFromSurface(y);
-  let iceBand=smoothstep(60,220,Math.abs(z)-Math.abs(x)*.18);
-  let thermal= smoothstep(110,260,d);
-  if(y>CONFIG.seaLevel-3) return 'SURFACE ICE';
-  if(depth<12 && d<120) return 'SAFE SHALLOWS';
-  if(d<170 && depth<45) return 'TWISTY FIELDS';
-  if(depth<70 && d<250) return 'LILYPAD EDGE';
-  if(depth>=70 && depth<125 && d<310) return 'CRYSTAL CAVES';
-  if(d>CONFIG.mapSize*.42) return 'CRATER VOID';
-  if(iceBand>.82 && depth<35) return 'GLACIAL SHELF';
-  if(thermal>.78 && depth>80) return 'THERMAL SPIRES';
-  return depth>55 ? 'DEEP TRENCH' : 'KELP BASIN';
-}
-
-function getElevation(x,z){
-  let radial=Math.hypot(x,z);
-  let base=fbm(x,z)*CONFIG.terrainAmplitude;
-  let ridges=ridge(x*1.15,z*1.15)*16;
-  let shelf=smoothstep(0,320,radial)*-120;
-  let trench=smoothstep(260,CONFIG.mapSize*0.5,radial)*-95;
-  let valleys=Noise.get(x*.02,0,z*.02)*10;
-  let ice=Noise.get(x*.004,0,z*.004)*7;
-  let shore= smoothstep(0,90,radial)*18;
-  let y=base+ridges+valleys+shelf+trench+shore-12;
-  return clamp(y,CONFIG.terrainFloor,CONFIG.seaLevel+24+ice);
+function getBiome(x, z, y) {
+  let d = getDistance2D(x, z);
+  let depth = getDepthFromSurface(y);
+  let iceBand = smoothstep(60, 220, Math.abs(z) - Math.abs(x) * 0.18);
+  let thermal = smoothstep(110, 260, d);
+  if (y > CONFIG.seaLevel - 3) return 'SURFACE ICE';
+  if (depth < 12 && d < 120) return 'SAFE SHALLOWS';
+  if (d < 170 && depth < 45) return 'TWISTY FIELDS';
+  if (depth < 70 && d < 250) return 'LILYPAD EDGE';
+  if (depth >= 70 && depth < 125 && d < 310) return 'CRYSTAL CAVES';
+  if (d > CONFIG.mapSize * 0.42) return 'CRATER VOID';
+  if (iceBand > 0.82 && depth < 35) return 'GLACIAL SHELF';
+  if (thermal > 0.78 && depth > 80) return 'THERMAL SPIRES';
+  return depth > 55 ? 'DEEP TRENCH' : 'KELP BASIN';
 }
 
-const terrainGeo=new THREE.PlaneGeometry(CONFIG.mapSize,CONFIG.mapSize,CONFIG.mapSegments,CONFIG.mapSegments);
-terrainGeo.rotateX(-Math.PI/2);
-const pos=terrainGeo.attributes.position;
-const colors=[];
-const c=new THREE.Color();
-const normalUp=new THREE.Vector3(0,1,0);
-
-for(let i=0;i<pos.count;i++){
-  let x=pos.getX(i), z=pos.getZ(i), y=getElevation(x,z);
-  pos.setY(i,y);
-  let depth=getDepthFromSurface(y);
-  let biome=getBiome(x,z,y);
-
-  if(biome==='SURFACE ICE') c.setHex(0xe8fbff);
-  else if(biome==='SAFE SHALLOWS') c.setHex(0xb6e3cf);
-  else if(biome==='TWISTY FIELDS') c.setHex(0x3c7d67);
-  else if(biome==='LILYPAD EDGE') c.setHex(0x4d8b91);
-  else if(biome==='CRYSTAL CAVES') c.setHex(0x4b5db8);
-  else if(biome==='THERMAL SPIRES') c.setHex(0x8e6c4f);
-  else if(biome==='GLACIAL SHELF') c.setHex(0xc9f7ff);
-  else if(biome==='CRATER VOID') c.setHex(0x02111b);
-  else if(biome==='DEEP TRENCH') c.setHex(0x09202c);
-  else c.setHex(depth>120 ? 0x041822 : 0x173245);
-
-  let tint=clamp(depth/140,0,1);
-  c.r*=1-tint*.1;
-  c.g*=1-tint*.05;
-  c.b*=1-tint*.02;
-  colors.push(c.r,c.g,c.b);
+function getElevation(x, z) {
+  let radial = Math.hypot(x, z);
+  let base = fbm(x, z) * CONFIG.terrainAmplitude;
+  let ridges = ridge(x * 1.15, z * 1.15) * 16;
+  let shelf = smoothstep(0, 320, radial) * -120;
+  let trench = smoothstep(260, CONFIG.mapSize * 0.5, radial) * -95;
+  let valleys = Noise.get(x * .02, 0, z * .02) * 10;
+  let ice = Noise.get(x * .004, 0, z * .004) * 7;
+  let shore = smoothstep(0, 90, radial) * 18;
+  let y = base + ridges + valleys + shelf + trench + shore - 12;
+  return clamp(y, CONFIG.terrainFloor, CONFIG.seaLevel + 24 + ice);
 }
 
-terrainGeo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+const terrainGeo = new THREE.PlaneGeometry(CONFIG.mapSize, CONFIG.mapSize, CONFIG.mapSegments, CONFIG.mapSegments);
+terrainGeo.rotateX(-Math.PI / 2);
+const pos = terrainGeo.attributes.position;
+const colors = [];
+const c = new THREE.Color();
+
+for (let i = 0; i < pos.count; i++) {
+  let x = pos.getX(i), z = pos.getZ(i), y = getElevation(x, z);
+  pos.setY(i, y);
+  let depth = getDepthFromSurface(y);
+  let biome = getBiome(x, z, y);
+
+  if (biome === 'SURFACE ICE') c.setHex(0xe8fbff);
+  else if (biome === 'SAFE SHALLOWS') c.setHex(0xb6e3cf);
+  else if (biome === 'TWISTY FIELDS') c.setHex(0x3c7d67);
+  else if (biome === 'LILYPAD EDGE') c.setHex(0x4d8b91);
+  else if (biome === 'CRYSTAL CAVES') c.setHex(0x4b5db8);
+  else if (biome === 'THERMAL SPIRES') c.setHex(0x8e6c4f);
+  else if (biome === 'GLACIAL SHELF') c.setHex(0xc9f7ff);
+  else if (biome === 'CRATER VOID') c.setHex(0x02111b);
+  else if (biome === 'DEEP TRENCH') c.setHex(0x09202c);
+  else c.setHex(depth > 120 ? 0x041822 : 0x173245);
+
+  let tint = clamp(depth / 140, 0, 1);
+  c.r *= 1 - tint * .1;
+  c.g *= 1 - tint * .05;
+  c.b *= 1 - tint * .02;
+  colors.push(c.r, c.g, c.b);
+}
+
+terrainGeo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 terrainGeo.computeVertexNormals();
 
-const terrainMat=new THREE.MeshStandardMaterial({
-  vertexColors:true,
-  roughness:.95,
-  metalness:.04,
-  flatShading:true
+const terrainMat = new THREE.MeshStandardMaterial({
+  vertexColors: true,
+  roughness: .95,
+  metalness: .04,
+  flatShading: true
 });
 
-const terrain=new THREE.Mesh(terrainGeo,terrainMat);
-terrain.receiveShadow=true;
+const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+terrain.receiveShadow = true;
 scene.add(terrain);
 
-const colliders=[];
-const fauna=[];
-const interactables=[];
+const colliders = [];
+const fauna = [];
+const interactables = [];
 
-function addCollider(x,z,r,bottom,top,type){
-  colliders.push({x,z,r,bottom,top,type});
+function addCollider(x, z, r, bottom, top, type) {
+  colliders.push({ x, z, r, bottom, top, type });
 }
-function makePlantMesh(kind){
-  if(kind==='kelp'){
-    let g=new THREE.CylinderGeometry(.5,.8,42,6);
-    g.translate(0,21,0);
-    return {
-      g,
-      m:new THREE.MeshStandardMaterial({color:0x52d37b,roughness:.65})
-    };
+
+function makePlantMesh(kind) {
+  if (kind === 'kelp') {
+    let g = new THREE.CylinderGeometry(.5, .8, 42, 6);
+    g.translate(0, 21, 0);
+    return { g, m: new THREE.MeshStandardMaterial({ color: 0x52d37b, roughness: .65 }) };
   }
-  if(kind==='coral'){
-    let g=new THREE.TorusGeometry(3,1,8,12);
-    g.rotateX(Math.PI/2);
-    return {
-      g,
-      m:new THREE.MeshStandardMaterial({color:0xff5d8f,roughness:.84})
-    };
+  if (kind === 'coral') {
+    let g = new THREE.TorusGeometry(3, 1, 8, 12);
+    g.rotateX(Math.PI / 2);
+    return { g, m: new THREE.MeshStandardMaterial({ color: 0xff5d8f, roughness: .84 }) };
   }
-  if(kind==='ice'){
-    let g=new THREE.ConeGeometry(1.3,12,6);
-    g.translate(0,6,0);
+  if (kind === 'ice') {
+    let g = new THREE.ConeGeometry(1.3, 12, 6);
+    g.translate(0, 6, 0);
     return {
       g,
-      m:new THREE.MeshStandardMaterial({
-        color:0xdffbff,
-        roughness:.18,
-        metalness:.12,
-        transparent:true,
-        opacity:.92
+      m: new THREE.MeshStandardMaterial({
+        color: 0xdffbff,
+        roughness: .18,
+        metalness: .12,
+        transparent: true,
+        opacity: .92
       })
     };
   }
-  return {
-    g:new THREE.SphereGeometry(1,8,8),
-    m:new THREE.MeshStandardMaterial({color:0xffffff})
-  };
+  return { g: new THREE.SphereGeometry(1, 8, 8), m: new THREE.MeshStandardMaterial({ color: 0xffffff }) };
 }
 
-function scatterInstances(kind,count,regionFn,scaleFn,rotFn){
-  const {g,m}=makePlantMesh(kind);
-  for(let i=0;i<count;i++){
-    let x=(Math.random()-.5)*CONFIG.mapSize*.92;
-    let z=(Math.random()-.5)*CONFIG.mapSize*.92;
-    let y=getElevation(x,z);
-    if(!regionFn(x,z,y)) continue;
+function scatterInstances(kind, count, regionFn, scaleFn, rotFn) {
+  const { g, m } = makePlantMesh(kind);
+  for (let i = 0; i < count; i++) {
+    let x = (Math.random() - .5) * CONFIG.mapSize * .92;
+    let z = (Math.random() - .5) * CONFIG.mapSize * .92;
+    let y = getElevation(x, z);
+    if (!regionFn(x, z, y)) continue;
 
-    let mesh=new THREE.Mesh(g,m);
-    mesh.position.set(x,y,z);
+    let mesh = new THREE.Mesh(g, m);
+    mesh.position.set(x, y, z);
     mesh.rotation.set(
-      rotFn?.x?.(x,z,y) ?? 0,
-      rotFn?.y?.(x,z,y) ?? Math.random()*Math.PI,
-      rotFn?.z?.(x,z,y) ?? 0
+      rotFn?.x?.(x, z, y) ?? 0,
+      rotFn?.y?.(x, z, y) ?? Math.random() * Math.PI,
+      rotFn?.z?.(x, z, y) ?? 0
     );
-    let s=scaleFn ? scaleFn(x,z,y) : 1;
+    let s = scaleFn ? scaleFn(x, z, y) : 1;
     mesh.scale.setScalar(s);
     scene.add(mesh);
 
     interactables.push({
       mesh,
-      type:kind,
-      baseY:y,
-      phase:Math.random()*Math.PI*2
+      type: kind,
+      baseY: y,
+      phase: Math.random() * Math.PI * 2
     });
 
-    if(kind==='kelp') addCollider(x,z,2,y,y+42*s,'flora');
-    if(kind==='coral') addCollider(x,z,3.8*s,y,y+5*s,'flora');
-    if(kind==='ice') addCollider(x,z,1.5*s,y,y+12*s,'ice');
+    if (kind === 'kelp') addCollider(x, z, 2, y, y + 42 * s, 'flora');
+    if (kind === 'coral') addCollider(x, z, 3.8 * s, y, y + 5 * s, 'flora');
+    if (kind === 'ice') addCollider(x, z, 1.5 * s, y, y + 12 * s, 'ice');
   }
 }
 
-scatterInstances(
-  'kelp',
-  CONFIG.floraKelp,
-  (x,z,y)=>{
-    let d=getDistance2D(x,z);
-    return y<CONFIG.seaLevel-16 && y>CONFIG.terrainFloor+8 && d<250 && d>40;
+scatterInstances('kelp', CONFIG.floraKelp,
+  (x, z, y) => {
+    let d = getDistance2D(x, z);
+    return y < CONFIG.seaLevel - 16 && y > CONFIG.terrainFloor + 8 && d < 250 && d > 40;
   },
-  ()=>0.7+Math.random()*1.7,
-  {y:()=>Math.random()*Math.PI,x:()=>0,z:()=>0}
+  () => 0.7 + Math.random() * 1.7,
+  { y: () => Math.random() * Math.PI, x: () => 0, z: () => 0 }
 );
 
-scatterInstances(
-  'coral',
-  CONFIG.floraCoral,
-  (x,z,y)=>{
-    let d=getDistance2D(x,z);
-    return y>CONFIG.seaLevel-38 && d<180 && d>10;
+scatterInstances('coral', CONFIG.floraCoral,
+  (x, z, y) => {
+    let d = getDistance2D(x, z);
+    return y > CONFIG.seaLevel - 38 && d < 180 && d > 10;
   },
-  ()=>.4+Math.random()*1.2,
-  {y:()=>Math.random()*Math.PI,x:()=>Math.PI/2,z:()=>0}
+  () => .4 + Math.random() * 1.2,
+  { y: () => Math.random() * Math.PI, x: () => Math.PI / 2, z: () => 0 }
 );
 
-scatterInstances(
-  'ice',
-  CONFIG.floraIce,
-  (x,z,y)=>{
-    let d=getDistance2D(x,z);
-    return y>CONFIG.seaLevel-12 && Math.abs(z)>160 && d<CONFIG.mapSize*.4;
+scatterInstances('ice', CONFIG.floraIce,
+  (x, z, y) => {
+    let d = getDistance2D(x, z);
+    return y > CONFIG.seaLevel - 12 && Math.abs(z) > 160 && d < CONFIG.mapSize * .4;
   },
-  ()=>.65+Math.random()*1.8,
-  {y:()=>Math.random()*Math.PI,x:()=>0,z:()=>Math.random()*.2-.1}
+  () => .65 + Math.random() * 1.8,
+  { y: () => Math.random() * Math.PI, x: () => 0, z: () => Math.random() * .2 - .1 }
 );
 
-function addRockCluster(x,z,size,count,color){
-  let group=new THREE.Group();
-  for(let i=0;i<count;i++){
-    let s=0.8+Math.random()*size;
-    let g=new THREE.DodecahedronGeometry(s,0);
-    let m=new THREE.MeshStandardMaterial({color,roughness:.98,flatShading:true});
-    let rock=new THREE.Mesh(g,m);
-    let ox=(Math.random()-.5)*size*6;
-    let oz=(Math.random()-.5)*size*6;
-    rock.position.set(
-      x+ox,
-      getElevation(x+ox,z+oz)+s*0.35,
-      z+oz
-    );
-    rock.rotation.set(
-      Math.random()*Math.PI,
-      Math.random()*Math.PI,
-      Math.random()*Math.PI
-    );
-    rock.castShadow=true;
-    rock.receiveShadow=true;
+function addRockCluster(x, z, size, count, color) {
+  let group = new THREE.Group();
+  for (let i = 0; i < count; i++) {
+    let s = 0.8 + Math.random() * size;
+    let g = new THREE.DodecahedronGeometry(s, 0);
+    let m = new THREE.MeshStandardMaterial({ color, roughness: .98, flatShading: true });
+    let rock = new THREE.Mesh(g, m);
+    let ox = (Math.random() - .5) * size * 6;
+    let oz = (Math.random() - .5) * size * 6;
+    rock.position.set(x + ox, getElevation(x + ox, z + oz) + s * 0.35, z + oz);
+    rock.rotation.set(Math.random() * Math.PI, Math.random() * Math.PI, Math.random() * Math.PI);
+    rock.castShadow = true;
+    rock.receiveShadow = true;
     group.add(rock);
   }
   scene.add(group);
 }
 
-for(let i=0;i<120;i++){
-  let x=(Math.random()-.5)*CONFIG.mapSize*.8;
-  let z=(Math.random()-.5)*CONFIG.mapSize*.8;
-  let y=getElevation(x,z);
-  if(y<CONFIG.seaLevel-10) addRockCluster(x,z,0.9+Math.random()*2.3,2+Math.floor(Math.random()*4),0x24343d);
+for (let i = 0; i < 120; i++) {
+  let x = (Math.random() - .5) * CONFIG.mapSize * .8;
+  let z = (Math.random() - .5) * CONFIG.mapSize * .8;
+  let y = getElevation(x, z);
+  if (y < CONFIG.seaLevel - 10) addRockCluster(x, z, 0.9 + Math.random() * 2.3, 2 + Math.floor(Math.random() * 4), 0x24343d);
 }
 
-function spawnBiomeSpine(x,z,height,count,color){
-  let group=new THREE.Group();
-  for(let i=0;i<count;i++){
-    let h=height*(0.7+Math.random()*1.8);
-    let r=.4+Math.random()*1.2;
-    let geo=new THREE.CylinderGeometry(r*1.1,r*.7,h,7);
-    geo.translate(0,h/2,0);
-    let mat=new THREE.MeshStandardMaterial({color,roughness:.86});
-    let m=new THREE.Mesh(geo,mat);
-    m.position.set(
-      x+(Math.random()-.5)*7,
-      getElevation(x,z)+.1,
-      z+(Math.random()-.5)*7
-    );
-    m.rotation.y=Math.random()*Math.PI;
-    m.rotation.z=(Math.random()-.5)*.18;
+function spawnBiomeSpine(x, z, height, count, color) {
+  let group = new THREE.Group();
+  for (let i = 0; i < count; i++) {
+    let h = height * (0.7 + Math.random() * 1.8);
+    let r = .4 + Math.random() * 1.2;
+    let geo = new THREE.CylinderGeometry(r * 1.1, r * .7, h, 7);
+    geo.translate(0, h / 2, 0);
+    let mat = new THREE.MeshStandardMaterial({ color, roughness: .86 });
+    let m = new THREE.Mesh(geo, mat);
+    m.position.set(x + (Math.random() - .5) * 7, getElevation(x, z) + .1, z + (Math.random() - .5) * 7);
+    m.rotation.y = Math.random() * Math.PI;
+    m.rotation.z = (Math.random() - .5) * .18;
     group.add(m);
-    addCollider(m.position.x,m.position.z,r*1.5,m.position.y,m.position.y+h,'spire');
+    addCollider(m.position.x, m.position.z, r * 1.5, m.position.y, m.position.y + h, 'spire');
   }
   scene.add(group);
 }
 
-for(let i=0;i<90;i++){
-  let x=(Math.random()-.5)*CONFIG.mapSize*.65;
-  let z=(Math.random()-.5)*CONFIG.mapSize*.65;
-  let y=getElevation(x,z);
-  let d=getDistance2D(x,z);
-  if(d>90 && d<280 && y<CONFIG.seaLevel-28 && Math.random()>.45){
-    spawnBiomeSpine(x,z,18+Math.random()*28,2+Math.floor(Math.random()*3),0x8aa6af);
+for (let i = 0; i < 90; i++) {
+  let x = (Math.random() - .5) * CONFIG.mapSize * .65;
+  let z = (Math.random() - .5) * CONFIG.mapSize * .65;
+  let y = getElevation(x, z);
+  let d = getDistance2D(x, z);
+  if (d > 90 && d < 280 && y < CONFIG.seaLevel - 28 && Math.random() > .45) {
+    spawnBiomeSpine(x, z, 18 + Math.random() * 28, 2 + Math.floor(Math.random() * 3), 0x8aa6af);
   }
 }
-function makeFauna(kind){
-  if(kind==='glider'){
-    let g=new THREE.SphereGeometry(1.2,16,12);
-    let m=new THREE.MeshStandardMaterial({
-      color:0x7ae7ff,
-      emissive:0x1a4b5a,
-      roughness:.25,
-      metalness:.05
-    });
-    let body=new THREE.Mesh(g,m);
 
-    let wingGeo=new THREE.ConeGeometry(.4,3,5);
-    let wingMat=new THREE.MeshStandardMaterial({
-      color:0xb7f0ff,
-      emissive:0x103040,
-      roughness:.35
-    });
+function makeFauna(kind) {
+  if (kind === 'glider') {
+    let g = new THREE.SphereGeometry(1.2, 16, 12);
+    let m = new THREE.MeshStandardMaterial({ color: 0x7ae7ff, emissive: 0x1a4b5a, roughness: .25, metalness: .05 });
+    let body = new THREE.Mesh(g, m);
 
-    let wing1=new THREE.Mesh(wingGeo,wingMat);
-    wing1.rotation.z=Math.PI/2;
-    wing1.position.set(1.2,0,0);
+    let wingGeo = new THREE.ConeGeometry(.4, 3, 5);
+    let wingMat = new THREE.MeshStandardMaterial({ color: 0xb7f0ff, emissive: 0x103040, roughness: .35 });
 
-    let wing2=wing1.clone();
-    wing2.position.x=-1.2;
+    let wing1 = new THREE.Mesh(wingGeo, wingMat);
+    wing1.rotation.z = Math.PI / 2;
+    wing1.position.set(1.2, 0, 0);
 
-    let group=new THREE.Group();
-    group.add(body,wing1,wing2);
+    let wing2 = wing1.clone();
+    wing2.position.x = -1.2;
+
+    let group = new THREE.Group();
+    group.add(body, wing1, wing2);
     return group;
   }
 
-  if(kind==='shark'){
-    let g=new THREE.CapsuleGeometry(1.2,4,5,10);
-    let m=new THREE.MeshStandardMaterial({color:0x244b52,roughness:.8});
-    let body=new THREE.Mesh(g,m);
-    body.rotation.z=Math.PI/2;
+  if (kind === 'shark') {
+    let g = new THREE.CapsuleGeometry(1.2, 4, 5, 10);
+    let m = new THREE.MeshStandardMaterial({ color: 0x244b52, roughness: .8 });
+    let body = new THREE.Mesh(g, m);
+    body.rotation.z = Math.PI / 2;
 
-    let tail=new THREE.ConeGeometry(.55,2.7,6);
-    let t=new THREE.Mesh(tail,new THREE.MeshStandardMaterial({color:0x19343a}));
-    t.position.x=-3.2;
-    t.rotation.z=-Math.PI/2;
+    let tail = new THREE.ConeGeometry(.55, 2.7, 6);
+    let t = new THREE.Mesh(tail, new THREE.MeshStandardMaterial({ color: 0x19343a }));
+    t.position.x = -3.2;
+    t.rotation.z = -Math.PI / 2;
 
-    let group=new THREE.Group();
-    group.add(body,t);
+    let group = new THREE.Group();
+    group.add(body, t);
     return group;
   }
 
-  if(kind==='peng'){
-    let a=new THREE.Mesh(
-      new THREE.SphereGeometry(.65,12,10),
-      new THREE.MeshStandardMaterial({color:0x222222,roughness:1})
-    );
-    let b=new THREE.Mesh(
-      new THREE.SphereGeometry(.55,12,10),
-      new THREE.MeshStandardMaterial({color:0xf1f5f9,roughness:.9})
-    );
-    b.position.y=.25;
-
-    let beak=new THREE.Mesh(
-      new THREE.ConeGeometry(.14,.5,5),
-      new THREE.MeshStandardMaterial({color:0xf59e0b})
-    );
-    beak.rotation.x=Math.PI/2;
-    beak.position.set(0,.1,.62);
-
-    let g=new THREE.Group();
-    g.add(a,b,beak);
+  if (kind === 'peng') {
+    let a = new THREE.Mesh(new THREE.SphereGeometry(.65, 12, 10), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 1 }));
+    let b = new THREE.Mesh(new THREE.SphereGeometry(.55, 12, 10), new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: .9 }));
+    b.position.y = .25;
+    let beak = new THREE.Mesh(new THREE.ConeGeometry(.14, .5, 5), new THREE.MeshStandardMaterial({ color: 0xf59e0b }));
+    beak.rotation.x = Math.PI / 2;
+    beak.position.set(0, .1, .62);
+    let g = new THREE.Group();
+    g.add(a, b, beak);
     return g;
   }
 
-  return new THREE.Mesh(
-    new THREE.SphereGeometry(1,8,8),
-    new THREE.MeshStandardMaterial({color:0xffffff})
-  );
+  return new THREE.Mesh(new THREE.SphereGeometry(1, 8, 8), new THREE.MeshStandardMaterial({ color: 0xffffff }));
 }
 
-function addFauna(kind,x,z,y){
-  let mesh=makeFauna(kind);
-  mesh.position.set(x,y,z);
-  mesh.rotation.y=Math.random()*Math.PI;
+function addFauna(kind, x, z, y) {
+  let mesh = makeFauna(kind);
+  mesh.position.set(x, y, z);
+  mesh.rotation.y = Math.random() * Math.PI;
   scene.add(mesh);
 
   fauna.push({
     mesh,
     kind,
-    home:{x,y,z},
-    vel:new THREE.Vector3((Math.random()-.5)*.04,0,(Math.random()-.5)*.04),
-    phase:Math.random()*Math.PI*2,
-    aggro:kind==='shark'?1:0
+    home: { x, y, z },
+    vel: new THREE.Vector3((Math.random() - .5) * .04, 0, (Math.random() - .5) * .04),
+    phase: Math.random() * Math.PI * 2,
+    aggro: kind === 'shark' ? 1 : 0
   });
 }
 
-for(let i=0;i<48;i++){
-  let x=(Math.random()-.5)*CONFIG.mapSize*.7;
-  let z=(Math.random()-.5)*CONFIG.mapSize*.7;
-  let y=getElevation(x,z)-8;
-  if(y<CONFIG.seaLevel-12 && y>CONFIG.terrainFloor+18){
-    addFauna(Math.random()>.7?'shark':'glider',x,z,y);
+for (let i = 0; i < 48; i++) {
+  let x = (Math.random() - .5) * CONFIG.mapSize * .7;
+  let z = (Math.random() - .5) * CONFIG.mapSize * .7;
+  let y = getElevation(x, z) - 8;
+  if (y < CONFIG.seaLevel - 12 && y > CONFIG.terrainFloor + 18) {
+    addFauna(Math.random() > .7 ? 'shark' : 'glider', x, z, y);
   }
 }
 
-for(let i=0;i<16;i++){
-  let x=(Math.random()-.5)*CONFIG.mapSize*.35;
-  let z=(Math.random()-.5)*CONFIG.mapSize*.35;
-  let y=CONFIG.seaLevel+2;
-  if(getElevation(x,z)>CONFIG.seaLevel-8){
-    addFauna('peng',x,z,y);
+for (let i = 0; i < 16; i++) {
+  let x = (Math.random() - .5) * CONFIG.mapSize * .35;
+  let z = (Math.random() - .5) * CONFIG.mapSize * .35;
+  let y = CONFIG.seaLevel + 2;
+  if (getElevation(x, z) > CONFIG.seaLevel - 8) {
+    addFauna('peng', x, z, y);
   }
 }
 
-const surfaceGeo=new THREE.PlaneGeometry(CONFIG.mapSize,CONFIG.mapSize,40,40);
-surfaceGeo.rotateX(-Math.PI/2);
-const surfaceMat=new THREE.MeshStandardMaterial({
-  color:0x7dd3fc,
-  transparent:true,
-  opacity:.32,
-  roughness:.12,
-  metalness:.85
+const surfaceGeo = new THREE.PlaneGeometry(CONFIG.mapSize, CONFIG.mapSize, 40, 40);
+surfaceGeo.rotateX(-Math.PI / 2);
+const surfaceMat = new THREE.MeshStandardMaterial({
+  color: 0x7dd3fc,
+  transparent: true,
+  opacity: .32,
+  roughness: .12,
+  metalness: .85
 });
-const waterSurface=new THREE.Mesh(surfaceGeo,surfaceMat);
-waterSurface.position.y=CONFIG.seaLevel;
+const waterSurface = new THREE.Mesh(surfaceGeo, surfaceMat);
+waterSurface.position.y = CONFIG.seaLevel;
 scene.add(waterSurface);
 
-const iceSheetGeo=new THREE.PlaneGeometry(CONFIG.mapSize,CONFIG.mapSize,32,32);
-iceSheetGeo.rotateX(-Math.PI/2);
-const iceSheetMat=new THREE.MeshStandardMaterial({
-  color:0xe8fbff,
-  transparent:true,
-  opacity:.22,
-  roughness:.15,
-  metalness:.1
+const iceSheetGeo = new THREE.PlaneGeometry(CONFIG.mapSize, CONFIG.mapSize, 32, 32);
+iceSheetGeo.rotateX(-Math.PI / 2);
+const iceSheetMat = new THREE.MeshStandardMaterial({
+  color: 0xe8fbff,
+  transparent: true,
+  opacity: .22,
+  roughness: .15,
+  metalness: .1
 });
-const iceSheet=new THREE.Mesh(iceSheetGeo,iceSheetMat);
-iceSheet.position.y=CONFIG.seaLevel+13;
+const iceSheet = new THREE.Mesh(iceSheetGeo, iceSheetMat);
+iceSheet.position.y = CONFIG.seaLevel + 13;
 scene.add(iceSheet);
 
-const skyDustCount=CONFIG.particles;
-const dustGeo=new THREE.BufferGeometry();
-const dustPos=new Float32Array(skyDustCount*3);
-for(let i=0;i<skyDustCount;i++){
-  let idx=i*3;
-  dustPos[idx]=(Math.random()-.5)*900;
-  dustPos[idx+1]=Math.random()*260-120;
-  dustPos[idx+2]=(Math.random()-.5)*900;
+const skyDustCount = CONFIG.particles;
+const dustGeo = new THREE.BufferGeometry();
+const dustPos = new Float32Array(skyDustCount * 3);
+for (let i = 0; i < skyDustCount; i++) {
+  let idx = i * 3;
+  dustPos[idx] = (Math.random() - .5) * 900;
+  dustPos[idx + 1] = Math.random() * 260 - 120;
+  dustPos[idx + 2] = (Math.random() - .5) * 900;
 }
-dustGeo.setAttribute('position',new THREE.BufferAttribute(dustPos,3));
-const dustMat=new THREE.PointsMaterial({
-  color:0x7dd3fc,
-  size:.36,
-  transparent:true,
-  opacity:.46,
-  blending:THREE.AdditiveBlending
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+const dustMat = new THREE.PointsMaterial({
+  color: 0x7dd3fc,
+  size: .36,
+  transparent: true,
+  opacity: .46,
+  blending: THREE.AdditiveBlending
 });
-const dust=new THREE.Points(dustGeo,dustMat);
+const dust = new THREE.Points(dustGeo, dustMat);
 scene.add(dust);
 
-const microGeo=new THREE.BufferGeometry();
-const microPos=new Float32Array(18000*3);
-for(let i=0;i<18000;i++){
-  let idx=i*3;
-  microPos[idx]=(Math.random()-.5)*700;
-  microPos[idx+1]=Math.random()*260-120;
-  microPos[idx+2]=(Math.random()-.5)*700;
+const microGeo = new THREE.BufferGeometry();
+const microPos = new Float32Array(18000 * 3);
+for (let i = 0; i < 18000; i++) {
+  let idx = i * 3;
+  microPos[idx] = (Math.random() - .5) * 700;
+  microPos[idx + 1] = Math.random() * 260 - 120;
+  microPos[idx + 2] = (Math.random() - .5) * 700;
 }
-microGeo.setAttribute('position',new THREE.BufferAttribute(microPos,3));
-const microMat=new THREE.PointsMaterial({
-  color:0xd9f7ff,
-  size:.16,
-  transparent:true,
-  opacity:.25
+microGeo.setAttribute('position', new THREE.BufferAttribute(microPos, 3));
+const microMat = new THREE.PointsMaterial({
+  color: 0xd9f7ff,
+  size: .16,
+  transparent: true,
+  opacity: .25
 });
-const micro=new THREE.Points(microGeo,microMat);
+const micro = new THREE.Points(microGeo, microMat);
 scene.add(micro);
-<script>
+
 const player = {
   velocity: new THREE.Vector3(),
   radius: CONFIG.playerRadius,
@@ -916,7 +864,7 @@ const player = {
   maxHp: 100,
   core: 100,
   maxCore: 100,
-  speed: 0.62,
+  speed: .62,
   scanTarget: null,
   scanTimer: 0,
   scanActive: false,
@@ -928,7 +876,7 @@ const keys = {
   space:false, shift:false, e:false
 };
 
-let cameraRotation = new THREE.Euler(0,0,0,'YXZ');
+let cameraRotation = new THREE.Euler(0, 0, 0, 'YXZ');
 
 renderer.domElement.addEventListener('click', () => {
   renderer.domElement.requestPointerLock();
@@ -951,7 +899,7 @@ document.addEventListener('keydown', (e) => {
   if (e.code === 'ShiftLeft') keys.shift = true;
   if (e.code === 'KeyE') keys.e = true;
 
-  if (['Digit1','Digit2','Digit3','Digit4','Digit5'].includes(e.code)) {
+  if (['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5'].includes(e.code)) {
     const n = parseInt(e.key, 10) - 1;
     document.querySelectorAll('.inv-slot').forEach(el => el.classList.remove('active'));
     const slots = document.querySelectorAll('.inv-slot');
@@ -1167,8 +1115,8 @@ function updateFauna(time, dt) {
     } else if (o.kind === 'peng') {
       p.x += Math.sin(time * 0.35 + o.phase) * 0.01;
       p.z += Math.cos(time * 0.28 + o.phase) * 0.01;
-      p.y = getElevation(p.x, p.z) + 1.3 + Math.sin(time * 2 + o.phase) * .05;
-      m.rotation.y += Math.sin(time * 0.4 + o.phase) * .01;
+      p.y = getElevation(p.x, p.z) + 1.3 + Math.sin(time * 2 + o.phase) * 0.05;
+      m.rotation.y += Math.sin(time * 0.4 + o.phase) * 0.01;
     }
 
     m.rotation.x = Math.sin(time * 0.9 + o.phase) * 0.03;
@@ -1193,10 +1141,10 @@ function updateInteractables(time) {
 }
 
 function updateParticles() {
-  dust.position.x = camera.position.x * .18;
-  dust.position.z = camera.position.z * .18;
-  micro.position.x = camera.position.x * .26;
-  micro.position.z = camera.position.z * .26;
+  dust.position.x = camera.position.x * 0.18;
+  dust.position.z = camera.position.z * 0.18;
+  micro.position.x = camera.position.x * 0.26;
+  micro.position.z = camera.position.z * 0.26;
 
   const arr = dust.geometry.attributes.position.array;
   for (let i = 1; i < arr.length; i += 3) {
@@ -1274,3 +1222,5 @@ window.addEventListener('resize', () => {
 
 animate();
 </script>
+</body>
+</html>
