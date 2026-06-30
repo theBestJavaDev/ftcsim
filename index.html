@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mathematical Geometry Harmonograph</title>
+    <title>Deep Abyss - 3D Ocean Immersion Engine</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,130 +14,360 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #05070f;
-            font-family: monospace;
+            background-color: #01040a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         }
-        canvas {
-            display: block;
+        #canvas-container {
             width: 100%;
             height: 100%;
             position: absolute;
             top: 0;
             left: 0;
+            z-index: 1;
         }
-        .ui-panel {
+        #hud {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background: rgba(5, 7, 15, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(56, 189, 248, 0.2);
-            padding: 15px;
-            border-radius: 6px;
+            top: 30px;
+            left: 30px;
             color: #38bdf8;
             z-index: 10;
             pointer-events: none;
-            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+            background: rgba(1, 4, 10, 0.6);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
-        h2 {
-            font-size: 11pt;
-            margin-bottom: 5px;
-            letter-spacing: 1px;
+        h1 {
+            font-size: 14pt;
+            letter-spacing: 2px;
             text-transform: uppercase;
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
         }
-        .equation {
+        .controls-guide {
             font-size: 9pt;
             color: #94a3b8;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 50%;
+            z-index: 5;
+            pointer-events: none;
+        }
+        #loading {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #01040a;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #38bdf8;
+            font-size: 16pt;
+            letter-spacing: 4px;
+            transition: opacity 1s ease;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
 
-    <canvas id="geoCanvas"></canvas>
+    <div id="loading">COMPILING UNDERWATER GEOMETRY MATRIX...</div>
+    <div id="crosshair"></div>
+    <div id="canvas-container"></div>
 
-    <div class="ui-panel">
-        <h2>Geometric Harmonograph</h2>
-        <div class="equation" id="eqX">x = sin(a·t + p1) + sin(b·t + p2)</div>
-        <div class="equation" id="eqY">y = cos(c·t + p3) + cos(d·t + p4)</div>
+    <div id="hud">
+        <h1>Abyssal Shelf v1.0</h1>
+        <div class="controls-guide">
+            <strong>Mouse:</strong> Look around (Click screen to lock/unlock camera)<br>
+            <strong>W / S :</strong> Move Forward / Backward<br>
+            <strong>A / D :</strong> Strafe Left / Right<br>
+            <strong>Space / Shift :</strong> Swim Up / Swim Down
+        </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('geoCanvas');
-        const ctx = canvas.getContext('2d');
+        // --- PROPOSAL & ENGINE INITIALIZATION ---
+        const container = document.getElementById('canvas-container');
+        const loadingScreen = document.getElementById('loading');
+        
+        const scene = new THREE.Scene();
+        
+        // Deep ocean oceanic fog matrix for realistic light extinction depth profiles
+        scene.background = new THREE.Color(0x011125);
+        scene.fog = new THREE.FogExp2(0x011125, 0.015);
 
-        function resize() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
+        const camera = new THREE.PerspectiveCamera(65, window.innerWidth / window.innerHeight, 0.1, 1000);
+        camera.position.set(0, 15, 50);
 
-        // Mathematical frequencies for wave interference ratios
-        let freqA = 2.01;
-        let freqB = 3.00;
-        let freqC = 5.01;
-        let freqD = 1.00;
+        const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.0;
+        container.appendChild(renderer.domElement);
 
-        // Phase shifts that mutate dynamically over time
-        let phase1 = 0;
-        let phase2 = Math.PI / 2;
-        let phase3 = Math.PI;
-        let phase4 = 0;
+        // --- SUB-SYSTEM LIGHTING MATRIX & GODRAYS ---
+        const ambientLight = new THREE.AmbientLight(0x0a2342, 1.2);
+        scene.add(ambientLight);
 
-        let timeOffset = 0;
+        // Primary directional light acting as surface sun penetration
+        const sunLight = new THREE.DirectionalLight(0x38bdf8, 2.5);
+        sunLight.position.set(0, 100, 0);
+        sunLight.castShadow = true;
+        sunLight.shadow.mapSize.width = 2048;
+        sunLight.shadow.mapSize.height = 2048;
+        sunLight.shadow.camera.near = 0.5;
+        sunLight.shadow.camera.far = 200;
+        const d = 80;
+        sunLight.shadow.camera.left = -d;
+        sunLight.shadow.camera.right = d;
+        sunLight.shadow.camera.top = d;
+        sunLight.shadow.camera.bottom = -d;
+        scene.add(sunLight);
 
-        function animate() {
-            // Semi-transparent background clear produces beautiful geometric trailing vectors
-            ctx.fillStyle = 'rgba(5, 7, 15, 0.04)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        // Secondary deep bioluminescent up-lighting
+        const floorLight = new THREE.DirectionalLight(0x0ea5e9, 0.5);
+        floorLight.position.set(0, -50, 0);
+        scene.add(floorLight);
 
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
+        // --- FIRST PERSON PHYSICS MOVEMENT CONTROLS ---
+        const keys = { w: false, a: false, s: false, d: false, space: false, shift: false };
+        let moveSpeed = 0.4;
+        let mouseX = 0, mouseY = 0;
+        let cameraRotation = new THREE.Euler(0, 0, 0, 'YXZ');
+
+        // Pointer Lock APIs for genuine 360 FPS camera integration
+        renderer.domElement.addEventListener('click', () => {
+            renderer.domElement.requestPointerLock();
+        });
+
+        document.addEventListener('mousemove', (event) => {
+            if (document.pointerLockElement === renderer.domElement) {
+                cameraRotation.y -= event.movementX * 0.002;
+                cameraRotation.x -= event.movementY * 0.002;
+                // Clamp looking vertically to avoid neck breaking inversion
+                cameraRotation.x = Math.max(-Math.PI / 2.3, Math.min(Math.PI / 2.3, cameraRotation.x));
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if(e.code === 'KeyW') keys.w = true;
+            if(e.code === 'KeyA') keys.a = true;
+            if(e.code === 'KeyS') keys.s = true;
+            if(e.code === 'KeyD') keys.d = true;
+            if(e.code === 'Space') keys.space = true;
+            if(e.code === 'ShiftLeft') keys.shift = true;
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if(e.code === 'KeyW') keys.w = false;
+            if(e.code === 'KeyA') keys.a = false;
+            if(e.code === 'KeyS') keys.s = false;
+            if(e.code === 'KeyD') keys.d = false;
+            if(e.code === 'Space') keys.space = false;
+            if(e.code === 'ShiftLeft') keys.shift = false;
+        });
+
+        function handleMovement() {
+            camera.quaternion.setFromEuler(cameraRotation);
             
-            // Scaler coordinates based on screen dimension bounds
-            const maxRadius = Math.min(centerX, centerY) * 0.45;
+            const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion);
+            const right = new THREE.Vector3(1, 0, 0).applyQuaternion(camera.quaternion);
+            
+            // Isolate horizontal swimming metrics to prevent unintended diving angles
+            forward.y = 0; forward.normalize();
+            right.y = 0; right.normalize();
 
-            // Mutate mathematical phase over time loops to shift geometry patterns smoothly
-            timeOffset += 0.002;
-            phase1 = Math.sin(timeOffset * 0.5) * Math.PI;
-            phase2 = Math.cos(timeOffset * 0.3) * Math.PI;
-            phase3 = Math.sin(timeOffset * 0.2) * Math.PI;
+            if (keys.w) camera.position.addScaledVector(forward, moveSpeed);
+            if (keys.s) camera.position.addScaledVector(forward, -moveSpeed);
+            if (keys.a) camera.position.addScaledVector(right, -moveSpeed);
+            if (keys.d) camera.position.addScaledVector(right, moveSpeed);
+            if (keys.space) camera.position.y += moveSpeed * 0.8;
+            if (keys.shift) camera.position.y -= moveSpeed * 0.8;
 
-            // Color spectrum variables cycling dynamically via trig frequencies
-            let hue = (timeOffset * 20) % 360;
-            ctx.strokeStyle = `hsla(${hue}, 80%, 60%, 0.6)`;
-            ctx.lineWidth = 1.5;
+            // Hard clamp floor collision boundary to avoid clipping under the map geometry
+            if(camera.position.y < 3) camera.position.y = 3;
+            if(camera.position.y > 75) camera.position.y = 75;
+        }
 
-            ctx.beginPath();
+        // --- GEOMETRIC TERRAIN ARCHITECTURE (OCEAN FLOOR PRESETS) ---
+        const terrainWidth = 300, terrainHeight = 300, segments = 120;
+        const terrainGeo = new THREE.PlaneGeometry(terrainWidth, terrainHeight, segments, segments);
+        terrainGeo.rotateX(-Math.PI / 2); // Orient plane flat relative to standard coordinate horizons
 
-            // Intersect 1200 high-resolution geometric calculation steps per animation frame
-            for (let i = 0; i < 1200; i++) {
-                let t = (i * 0.05);
-
-                // Four-point matrix wave synthesis algorithm (Chladni / Harmonograph physics formulas)
-                let x = Math.sin(freqA * t + phase1) * 0.6 + Math.sin(freqB * t + phase2) * 0.4;
-                let y = Math.cos(freqC * t + phase3) * 0.6 + Math.cos(freqD * t + phase4) * 0.4;
-
-                // Map mathematical floats directly to screen canvas vector geometry
-                let screenX = centerX + x * maxRadius;
-                let screenY = centerY + y * maxRadius;
-
-                if (i === 0) {
-                    ctx.moveTo(screenX, screenY);
-                } else {
-                    ctx.lineTo(screenX, screenY);
-                }
+        // Displace plane mesh vertices mathematically using combinations of sine/cosine fractal noise
+        const pos = terrainGeo.attributes.position;
+        for (let i = 0; i < pos.count; i++) {
+            let x = pos.getX(i);
+            let z = pos.getZ(i);
+            // Multi-frequency sound wave mathematical interference mapping to build valleys and underwater ridges
+            let y = Math.sin(x * 0.03) * Math.cos(z * 0.03) * 12;
+            y += Math.sin(x * 0.08) * 3; 
+            y += Math.cos(z * 0.1) * 1.5;
+            
+            // Build abyssal perimeter cliffs to prevent players from swimming into infinity empty space
+            let distFromCenter = Math.sqrt(x*x + z*z);
+            if(distFromCenter > 100) {
+                y += Math.pow((distFromCenter - 100) * 0.4, 2);
             }
 
-            ctx.shadowBlur = 4;
-            ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.3)`;
-            ctx.stroke();
-            ctx.shadowBlur = 0; // Reset canvas filter overhead
+            pos.setY(i, y);
+        }
+        terrainGeo.computeVertexNormals();
 
-            requestAnimationFrame(animate);
+        // Custom realistic sand shader structure utilizing built-in physical microfacets
+        const terrainMat = new THREE.MeshStandardMaterial({
+            color: 0x142834,
+            roughness: 0.9,
+            metalness: 0.1,
+            flatShading: true // Gives stylized structural texture variance reminiscent of oceanic formations
+        });
+        const terrainMesh = new THREE.Mesh(terrainGeo, terrainMat);
+        terrainMesh.receiveShadow = true;
+        scene.add(terrainMesh);
+
+        // --- SUB-SURFACE WATER ENGINE VOLUME PARTICLES (MARINE SNOW) ---
+        const particleCount = 4000;
+        const particleGeo = new THREE.BufferGeometry();
+        const positions = new Float32Array(particleCount * 3);
+
+        for(let i = 0; i < particleCount * 3; i += 3) {
+            positions[i] = (Math.random() - 0.5) * 250;
+            positions[i+1] = Math.random() * 80;
+            positions[i+2] = (Math.random() - 0.5) * 250;
         }
 
-        animate();
+        particleGeo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+        
+        // Custom texture shader for high opacity depth sorting marine particulate elements
+        const particleMat = new THREE.PointsMaterial({
+            size: 0.25,
+            color: 0x7dd3fc,
+            transparent: true,
+            opacity: 0.4,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
+
+        const marineSnow = new THREE.Points(particleGeo, particleMat);
+        scene.add(marineSnow);
+
+        // --- BOIDS FLOCKING SIMULATION LAYER (FISH BIOMASS SEEDING) ---
+        const fishCount = 120;
+        const fishGroup = new THREE.Group();
+        const fishData = [];
+
+        // Geometrically trace a standard hydro-dynamic low-poly fish asset natively in memory
+        const fishGeo = new THREE.ConeGeometry(0.3, 1.2, 4);
+        fishGeo.rotateX(Math.PI / 2); // align pointer tip natively forward along local Z axis
+
+        const fishMat = new THREE.MeshStandardMaterial({
+            color: 0x38bdf8,
+            roughness: 0.2,
+            metalness: 0.8,
+            emissive: 0x0369a1,
+            emissiveIntensity: 0.5
+        });
+
+        for(let i = 0; i < fishCount; i++) {
+            const mesh = new THREE.Mesh(fishGeo, fishMat);
+            
+            // Randomize deployment throughout midwater arrays
+            mesh.position.set(
+                (Math.random() - 0.5) * 120,
+                15 + Math.random() * 30,
+                (Math.random() - 0.5) * 120
+            );
+            
+            scene.add(mesh);
+            fishData.push({
+                mesh: mesh,
+                velocity: new THREE.Vector3((Math.random()-0.5)*0.2, (Math.random()-0.5)*0.05, (Math.random()-0.5)*0.2),
+                speed: 0.1 + Math.random() * 0.1,
+                seed: Math.random() * 100
+            });
+        }
+
+        function simulateFish(time) {
+            fishData.forEach((fish) => {
+                // Procedural path calculation utilizing trigonometric swarms
+                fish.mesh.position.add(fish.velocity);
+                
+                // Keep boids swimming within logical geographic parameters
+                if (Math.abs(fish.mesh.position.x) > 100) fish.velocity.x *= -1;
+                if (Math.abs(fish.mesh.position.z) > 100) fish.velocity.z *= -1;
+                if (fish.mesh.position.y < 5 || fish.mesh.position.y > 55) fish.velocity.y *= -1;
+
+                // Mathematical tail sway animation based on global animation elapsed clocks
+                const tailSway = Math.sin(time * 12 + fish.seed) * 0.08;
+                fish.velocity.x += Math.sin(time + fish.seed) * 0.002;
+                
+                // Align the 3D model orientation directly down its instantaneous velocity vector
+                const targetRotation = Math.atan2(fish.velocity.x, fish.velocity.z);
+                fish.mesh.rotation.y = targetRotation;
+                fish.mesh.rotation.z = tailSway; // Adds organic swimming tail flutter simulation mechanics
+            });
+        }
+
+        // --- MAIN RENDERING CLOCK ENGINE LOOP ---
+        const clock = new THREE.Clock();
+
+        // Kill loading sequence curtain screen once elements load successfully
+        setTimeout(() => {
+            loadingScreen.style.opacity = 0;
+            setTimeout(() => loadingScreen.remove(), 1000);
+        }, 800);
+
+        function renderFrame() {
+            requestAnimationFrame(renderFrame);
+            
+            const elapsedTime = clock.getElapsedTime();
+
+            // Run sub-frame physics calculation updates
+            handleMovement();
+            simulateFish(elapsedTime);
+
+            // Animate marine dust downward slowly to replicate continuous ocean floor snow fall vectors
+            const positionsArray = marineSnow.geometry.attributes.position.array;
+            for(let i = 1; i < positionsArray.length; i += 3) {
+                positionsArray[i] -= 0.02; // downward vertical bias velocity
+                if(positionsArray[i] < 0) {
+                    positionsArray[i] = 60 + Math.random() * 20; // Recycle particle back to sky box roof ceiling
+                }
+            }
+            marineSnow.geometry.attributes.position.needsUpdate = true;
+
+            // Generate slow rhythmic oceanic sub-surface ambient lighting sway
+            sunLight.position.x = Math.sin(elapsedTime * 0.2) * 30;
+            sunLight.position.z = Math.cos(elapsedTime * 0.2) * 30;
+
+            renderer.render(scene, camera);
+        }
+
+        // Window size adjustment monitoring system
+        window.addEventListener('resize', onWindowResize, false);
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Execute rendering clock pipeline
+        renderFrame();
     </script>
 </body>
 </html>
