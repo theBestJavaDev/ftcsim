@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dynamic Random Bezier Curves</title>
+    <title>Mathematical Geometry Harmonograph</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,8 +14,8 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #0f172a;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #05070f;
+            font-family: monospace;
         }
         canvas {
             display: block;
@@ -25,195 +25,118 @@
             top: 0;
             left: 0;
         }
-        .controls {
+        .ui-panel {
             position: absolute;
-            top: 20px;
+            bottom: 20px;
             left: 20px;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(5, 7, 15, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.2);
             padding: 15px;
-            border-radius: 8px;
-            color: #f8fafc;
-            z-index: 10;
-            pointer-events: auto;
-            max-width: 300px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-        }
-        h1 {
-            font-size: 14pt;
-            margin-bottom: 8px;
-            font-weight: 600;
+            border-radius: 6px;
             color: #38bdf8;
+            z-index: 10;
+            pointer-events: none;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
         }
-        p {
-            font-size: 10pt;
-            color: #94a3b8;
-            line-height: 1.4;
-            margin-bottom: 12px;
+        h2 {
+            font-size: 11pt;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
         }
-        .legend {
+        .equation {
             font-size: 9pt;
-            display: grid;
-            grid-template-columns: auto 1fr;
-            gap: 6px 12px;
-            align-items: center;
+            color: #94a3b8;
         }
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            display: inline-block;
-        }
-        .dot-start { background-color: #4ade80; }
-        .dot-cp1 { background-color: #f43f5e; }
-        .dot-cp2 { background-color: #a855f7; }
-        .dot-end { background-color: #f59e0b; }
     </style>
 </head>
 <body>
 
-    <div class="controls">
-        <h1>Bezier Canvas</h1>
-        <p>Constantly morphing cubic Bézier curves with visible tracking vectors and control handles.</p>
-        <div class="legend">
-            <span class="dot dot-start"></span> <span>Start Point (P0)</span>
-            <span class="dot dot-cp1"></span> <span>Control Point 1 (P1)</span>
-            <span class="dot dot-cp2"></span> <span>Control Point 2 (P2)</span>
-            <span class="dot dot-end"></span> <span>End Point (P3)</span>
-        </div>
+    <canvas id="geoCanvas"></canvas>
+
+    <div class="ui-panel">
+        <h2>Geometric Harmonograph</h2>
+        <div class="equation" id="eqX">x = sin(a·t + p1) + sin(b·t + p2)</div>
+        <div class="equation" id="eqY">y = cos(c·t + p3) + cos(d·t + p4)</div>
     </div>
 
-    <canvas id="bezierCanvas"></canvas>
-
     <script>
-        const canvas = document.getElementById('bezierCanvas');
+        const canvas = document.getElementById('geoCanvas');
         const ctx = canvas.getContext('2d');
 
-        // Set high-DPI canvas backing scale if needed
-        function resizeCanvas() {
+        function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        window.addEventListener('resize', resize);
+        resize();
 
-        // Helper function to generate a point with target destinations for smooth interpolation
-        function createPoint() {
-            const x = Math.random() * canvas.width;
-            const y = Math.random() * canvas.height;
-            return {
-                x: x,
-                y: y,
-                targetX: x,
-                targetY: y,
-                vx: 0,
-                vy: 0,
-                speed: 0.01 + Math.random() * 0.02
-            };
-        }
+        // Mathematical frequencies for wave interference ratios
+        let freqA = 2.01;
+        let freqB = 3.00;
+        let freqC = 5.01;
+        let freqD = 1.00;
 
-        // Generate coordinates for a single Cubic Bezier curve (4 points)
-        const curve = {
-            p0: createPoint(), // Start
-            p1: createPoint(), // Control 1
-            p2: createPoint(), // Control 2
-            p3: createPoint()  // End
-        };
+        // Phase shifts that mutate dynamically over time
+        let phase1 = 0;
+        let phase2 = Math.PI / 2;
+        let phase3 = Math.PI;
+        let phase4 = 0;
 
-        // Update point positions towards a random destination
-        function updatePoint(p) {
-            // If close to destination, pick a new random target
-            const dx = p.targetX - p.x;
-            const dy = p.targetY - p.y;
-            const dist = Math.sqrt(dx * dx + dy * dy);
-
-            if (dist < 10) {
-                p.targetX = Math.random() * canvas.width;
-                p.targetY = Math.random() * canvas.height;
-                p.speed = 0.005 + Math.random() * 0.015; // randomize speed slightly each turn
-            }
-
-            // Smooth interpolation (easing)
-            p.x += dx * p.speed;
-            p.y += dy * p.speed;
-        }
-
-        function drawNode(p, label, color) {
-            // Draw handle circle
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
-            ctx.fillStyle = color;
-            ctx.shadowBlur = 10;
-            ctx.shadowColor = color;
-            ctx.fill();
-            ctx.shadowBlur = 0; // reset shadow
-
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, 9, 0, Math.PI * 2);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Label text
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-            ctx.font = '10px monospace';
-            ctx.fillText(label, p.x + 12, p.y + 4);
-        }
+        let timeOffset = 0;
 
         function animate() {
-            // Clear screen with a slight alpha trail effect for smooth motion blur
-            ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+            // Semi-transparent background clear produces beautiful geometric trailing vectors
+            ctx.fillStyle = 'rgba(5, 7, 15, 0.04)';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Update all points
-            updatePoint(curve.p0);
-            updatePoint(curve.p1);
-            updatePoint(curve.p2);
-            updatePoint(curve.p3);
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            
+            // Scaler coordinates based on screen dimension bounds
+            const maxRadius = Math.min(centerX, centerY) * 0.45;
 
-            // Draw vector guide lines connecting points to control handles
-            ctx.beginPath();
-            ctx.moveTo(curve.p0.x, curve.p0.y);
-            ctx.lineTo(curve.p1.x, curve.p1.y);
-            ctx.strokeStyle = 'rgba(244, 63, 94, 0.25)'; // Line to CP1
+            // Mutate mathematical phase over time loops to shift geometry patterns smoothly
+            timeOffset += 0.002;
+            phase1 = Math.sin(timeOffset * 0.5) * Math.PI;
+            phase2 = Math.cos(timeOffset * 0.3) * Math.PI;
+            phase3 = Math.sin(timeOffset * 0.2) * Math.PI;
+
+            // Color spectrum variables cycling dynamically via trig frequencies
+            let hue = (timeOffset * 20) % 360;
+            ctx.strokeStyle = `hsla(${hue}, 80%, 60%, 0.6)`;
             ctx.lineWidth = 1.5;
-            ctx.setLineDash([4, 4]);
-            ctx.stroke();
 
             ctx.beginPath();
-            ctx.moveTo(curve.p3.x, curve.p3.y);
-            ctx.lineTo(curve.p2.x, curve.p2.y);
-            ctx.strokeStyle = 'rgba(168, 85, 247, 0.25)'; // Line to CP2
-            ctx.stroke();
-            ctx.setLineDash([]); // Reset line dash
 
-            // Draw the actual Bezier curve
-            ctx.beginPath();
-            ctx.moveTo(curve.p0.x, curve.p0.y);
-            ctx.bezierCurveTo(
-                curve.p1.x, curve.p1.y,
-                curve.p2.x, curve.p2.y,
-                curve.p3.x, curve.p3.y
-            );
-            ctx.strokeStyle = '#38bdf8';
-            ctx.lineWidth = 4;
-            ctx.lineCap = 'round';
-            ctx.shadowBlur = 15;
-            ctx.shadowColor = '#38bdf8';
-            ctx.stroke();
-            ctx.shadowBlur = 0; // Reset glow
+            // Intersect 1200 high-resolution geometric calculation steps per animation frame
+            for (let i = 0; i < 1200; i++) {
+                let t = (i * 0.05);
 
-            // Draw the point nodes on top
-            drawNode(curve.p0, 'P0 (Start)', '#4ade80');
-            drawNode(curve.p1, 'P1 (Control 1)', '#f43f5e');
-            drawNode(curve.p2, 'P2 (Control 2)', '#a855f7');
-            drawNode(curve.p3, 'P3 (End)', '#f59e0b');
+                // Four-point matrix wave synthesis algorithm (Chladni / Harmonograph physics formulas)
+                let x = Math.sin(freqA * t + phase1) * 0.6 + Math.sin(freqB * t + phase2) * 0.4;
+                let y = Math.cos(freqC * t + phase3) * 0.6 + Math.cos(freqD * t + phase4) * 0.4;
+
+                // Map mathematical floats directly to screen canvas vector geometry
+                let screenX = centerX + x * maxRadius;
+                let screenY = centerY + y * maxRadius;
+
+                if (i === 0) {
+                    ctx.moveTo(screenX, screenY);
+                } else {
+                    ctx.lineTo(screenX, screenY);
+                }
+            }
+
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = `hsla(${hue}, 80%, 60%, 0.3)`;
+            ctx.stroke();
+            ctx.shadowBlur = 0; // Reset canvas filter overhead
 
             requestAnimationFrame(animate);
         }
 
-        // Start animation loop
         animate();
     </script>
 </body>
