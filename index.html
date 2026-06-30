@@ -16,71 +16,42 @@
 }
 *{box-sizing:border-box;margin:0;padding:0;user-select:none;}
 html,body{
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  background:#000;
+  width:100%;height:100%;overflow:hidden;background:#000;
   font-family:Segoe UI,Tahoma,Geneva,Verdana,sans-serif;
 }
 #canvas-container{position:absolute;inset:0;z-index:1;}
 #loading{
   position:absolute;inset:0;
   background:linear-gradient(180deg,#01050b 0%,#020b14 55%,#011019 100%);
-  z-index:100;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  color:var(--cyan);
-  font-size:14pt;
-  letter-spacing:4px;
-  font-family:monospace;
-  transition:opacity 1s ease;
+  z-index:100;display:flex;flex-direction:column;justify-content:center;align-items:center;
+  color:var(--cyan);font-size:14pt;letter-spacing:4px;font-family:monospace;transition:opacity 1s ease;
 }
 #loading-text{margin-top:18px;text-shadow:0 0 14px rgba(102,243,255,.45);}
 #error-log{
-  color:var(--danger);
-  font-size:10pt;
-  margin-top:15px;
-  max-width:80%;
-  text-align:center;
-  white-space:pre-wrap;
+  color:var(--danger);font-size:10pt;margin-top:15px;max-width:80%;text-align:center;white-space:pre-wrap;
 }
 .spinner{
-  width:56px;height:56px;
-  border:4px solid rgba(102,243,255,.12);
-  border-top-color:var(--cyan);
-  border-right-color:rgba(255,255,255,.25);
-  border-radius:50%;
-  animation:spin 1s linear infinite;
+  width:56px;height:56px;border:4px solid rgba(102,243,255,.12);
+  border-top-color:var(--cyan);border-right-color:rgba(255,255,255,.25);
+  border-radius:50%;animation:spin 1s linear infinite;
 }
 @keyframes spin{to{transform:rotate(360deg)}}
 #crosshair{
-  position:absolute;left:50%;top:50%;
-  transform:translate(-50%,-50%);
-  width:8px;height:8px;
-  border:1px solid rgba(255,255,255,.86);
-  border-radius:50%;
-  z-index:5;
-  pointer-events:none;
-  box-shadow:0 0 10px rgba(0,0,0,.6),0 0 6px rgba(102,243,255,.22);
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:8px;height:8px;border:1px solid rgba(255,255,255,.86);border-radius:50%;
+  z-index:5;pointer-events:none;box-shadow:0 0 10px rgba(0,0,0,.6),0 0 6px rgba(102,243,255,.22);
 }
 #vignette{
-  position:absolute;inset:0;
-  pointer-events:none;
-  z-index:4;
+  position:absolute;inset:0;pointer-events:none;z-index:4;
   background:radial-gradient(circle at center,rgba(0,0,0,0) 38%,rgba(0,0,0,.25) 72%,rgba(0,0,0,.72) 100%);
 }
 #surface-glow{
-  position:absolute;left:0;top:0;width:100%;height:120px;
-  pointer-events:none;z-index:3;
+  position:absolute;left:0;top:0;width:100%;height:120px;pointer-events:none;z-index:3;
   background:linear-gradient(180deg,rgba(220,250,255,.25),rgba(220,250,255,.12),rgba(220,250,255,0));
-  mix-blend-mode:screen;
-  opacity:.55;
+  mix-blend-mode:screen;opacity:.55;
 }
 #snow-band{
-  position:absolute;left:0;top:0;width:100%;height:100%;
-  pointer-events:none;z-index:3;opacity:.5;
+  position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:.5;
   background-image:
     radial-gradient(circle at 10% 30%,rgba(255,255,255,.65) 0 1px,transparent 1.8px),
     radial-gradient(circle at 70% 20%,rgba(255,255,255,.42) 0 1px,transparent 1.8px),
@@ -93,55 +64,28 @@ html,body{
   to{background-position:420px 1200px,-520px 1600px,840px 1100px}
 }
 .panel{
-  position:absolute;
-  z-index:10;
-  background:var(--glass);
-  backdrop-filter:blur(10px);
-  border:1px solid var(--line);
-  box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.03);
-  border-radius:10px;
-  color:#d7f3ff;
+  position:absolute;z-index:10;background:var(--glass);backdrop-filter:blur(10px);
+  border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.03);
+  border-radius:10px;color:#d7f3ff;
 }
-.panel h1{
-  font-size:14pt;
-  letter-spacing:1.2px;
-  color:#fff;
-  margin-bottom:10px;
-}
+.panel h1{font-size:14pt;letter-spacing:1.2px;color:#fff;margin-bottom:10px;}
 .stat{
-  display:flex;
-  justify-content:space-between;
-  gap:14px;
-  color:#a8bfca;
-  font-size:10pt;
-  margin-bottom:6px;
+  display:flex;justify-content:space-between;gap:14px;color:#a8bfca;font-size:10pt;margin-bottom:6px;
 }
 .stat-val{
-  color:var(--cyan);
-  font-family:Consolas,monospace;
-  font-weight:700;
+  color:var(--cyan);font-family:Consolas,monospace;font-weight:700;
 }
-#pda-panel{
-  top:20px;left:20px;width:320px;padding:15px 15px 12px;
-}
+#pda-panel{top:20px;left:20px;width:320px;padding:15px 15px 12px;}
 #pda-log{
-  margin-top:10px;
-  padding-top:10px;
-  border-top:1px solid rgba(255,255,255,.08);
-  font-size:9pt;
-  line-height:1.45;
-  color:#b7d8e4;
-  max-height:140px;
-  overflow:hidden;
+  margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08);
+  font-size:9pt;line-height:1.45;color:#b7d8e4;max-height:140px;overflow:hidden;
 }
 #survival-hud{
   position:absolute;left:30px;bottom:30px;z-index:10;width:270px;
 }
 #survival-hud .meter-container{
-  background:rgba(0,0,0,.62);
-  border:1px solid rgba(255,255,255,.08);
-  height:25px;border-radius:12px;margin-bottom:13px;overflow:hidden;position:relative;
-  box-shadow:inset 0 0 14px rgba(0,0,0,.8);
+  background:rgba(0,0,0,.62);border:1px solid rgba(255,255,255,.08);height:25px;border-radius:12px;
+  margin-bottom:13px;overflow:hidden;position:relative;box-shadow:inset 0 0 14px rgba(0,0,0,.8);
 }
 .meter-fill{height:100%;transition:width .18s linear;}
 .meter-icon{
@@ -157,36 +101,29 @@ html,body{
 #hp-fill{background:linear-gradient(90deg,#8b0015,#ff4d6d);width:100%;}
 #temp-fill{background:linear-gradient(90deg,#2563eb,#a5f3fc,#f8fafc);width:100%;}
 #inventory{
-  position:absolute;right:30px;bottom:30px;z-index:10;
-  display:grid;grid-template-columns:repeat(5,50px);gap:8px;
+  position:absolute;right:30px;bottom:30px;z-index:10;display:grid;grid-template-columns:repeat(5,50px);gap:8px;
 }
 .inv-slot{
-  width:50px;height:50px;background:rgba(2,10,20,.72);
-  border:2px solid rgba(102,243,255,.34);
-  border-radius:7px;display:flex;justify-content:center;align-items:center;
-  color:rgba(255,255,255,.22);font-size:18pt;
-  box-shadow:0 4px 10px rgba(0,0,0,.45);
-  transition:border-color .2s,transform .2s,background .2s;
+  width:50px;height:50px;background:rgba(2,10,20,.72);border:2px solid rgba(102,243,255,.34);border-radius:7px;
+  display:flex;justify-content:center;align-items:center;color:rgba(255,255,255,.22);font-size:18pt;
+  box-shadow:0 4px 10px rgba(0,0,0,.45);transition:border-color .2s,transform .2s,background .2s;
 }
 .inv-slot.active{
   border-color:#fff;background:rgba(102,243,255,.18);transform:translateY(-2px);
 }
 #warning-overlay{
-  position:absolute;top:18%;left:0;width:100%;text-align:center;
-  color:var(--danger);font-size:22pt;font-weight:800;letter-spacing:4px;
-  z-index:20;text-shadow:0 0 24px rgba(255,77,109,.75);
+  position:absolute;top:18%;left:0;width:100%;text-align:center;color:var(--danger);
+  font-size:22pt;font-weight:800;letter-spacing:4px;z-index:20;text-shadow:0 0 24px rgba(255,77,109,.75);
   opacity:0;transition:opacity .25s;pointer-events:none;
 }
 #hint{
-  position:absolute;left:50%;bottom:92px;transform:translateX(-50%);
-  z-index:10;color:#d6f6ff;font-size:10pt;padding:8px 14px;border-radius:999px;
-  background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);opacity:.9;
+  position:absolute;left:50%;bottom:92px;transform:translateX(-50%);z-index:10;color:#d6f6ff;
+  font-size:10pt;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);opacity:.9;
 }
 #scan-bar{
   position:absolute;left:50%;top:56%;transform:translateX(-50%);
   width:260px;height:8px;border-radius:99px;background:rgba(255,255,255,.08);
-  border:1px solid rgba(255,255,255,.08);z-index:12;overflow:hidden;
-  opacity:0;pointer-events:none;
+  border:1px solid rgba(255,255,255,.08);z-index:12;overflow:hidden;opacity:0;pointer-events:none;
 }
 #scan-fill{width:0%;height:100%;background:linear-gradient(90deg,#7dd3fc,#67e8f9,#d9f7ff);}
 </style>
@@ -273,12 +210,12 @@ try {
 
   const Noise = {
     p: [],
-    init(seed) {
+    init(seed){
       let s = seed >>> 0;
       const r = () => ((s = (s * 1664525 + 1013904223) >>> 0) & 0xffffffff) / 0x100000000;
       let perm = [...Array(256)].map(() => Math.floor(r() * 256));
       this.p = new Array(512);
-      for (let i = 0; i < 512; i++) this.p[i] = perm[i & 255];
+      for(let i=0;i<512;i++) this.p[i] = perm[i & 255];
     },
     fade:t=>t*t*t*(t*(t*6-15)+10),
     lerp:(t,a,b)=>a+t*(b-a),
@@ -292,8 +229,8 @@ try {
       let X = Math.floor(x) & 255, Y = Math.floor(y) & 255, Z = Math.floor(z) & 255;
       x -= Math.floor(x); y -= Math.floor(y); z -= Math.floor(z);
       let u = this.fade(x), v = this.fade(y), w = this.fade(z),
-          A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z,
-          B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
+        A = this.p[X] + Y, AA = this.p[A] + Z, AB = this.p[A + 1] + Z,
+        B = this.p[X + 1] + Y, BA = this.p[B] + Z, BB = this.p[B + 1] + Z;
       return this.lerp(
         w,
         this.lerp(v,
@@ -376,14 +313,14 @@ try {
     let depth = getDepthFromSurface(y);
     let iceBand = smoothstep(60,220,Math.abs(z)-Math.abs(x)*.18);
     let thermal = smoothstep(110,260,d);
-    if (y > CONFIG.seaLevel - 3) return 'SURFACE ICE';
-    if (depth < 12 && d < 120) return 'SAFE SHALLOWS';
-    if (d < 170 && depth < 45) return 'TWISTY FIELDS';
-    if (depth < 70 && d < 250) return 'LILYPAD EDGE';
-    if (depth >= 70 && depth < 125 && d < 310) return 'CRYSTAL CAVES';
-    if (d > CONFIG.mapSize * .42) return 'CRATER VOID';
-    if (iceBand > .82 && depth < 35) return 'GLACIAL SHELF';
-    if (thermal > .78 && depth > 80) return 'THERMAL SPIRES';
+    if(y > CONFIG.seaLevel - 3) return 'SURFACE ICE';
+    if(depth < 12 && d < 120) return 'SAFE SHALLOWS';
+    if(d < 170 && depth < 45) return 'TWISTY FIELDS';
+    if(depth < 70 && d < 250) return 'LILYPAD EDGE';
+    if(depth >= 70 && depth < 125 && d < 310) return 'CRYSTAL CAVES';
+    if(d > CONFIG.mapSize * .42) return 'CRATER VOID';
+    if(iceBand > .82 && depth < 35) return 'GLACIAL SHELF';
+    if(thermal > .78 && depth > 80) return 'THERMAL SPIRES';
     return depth > 55 ? 'DEEP TRENCH' : 'KELP BASIN';
   }
 
@@ -411,20 +348,18 @@ try {
     pos.setY(i,y);
     let depth = getDepthFromSurface(y);
     let biome = getBiome(x,z,y);
-    if (biome === 'SURFACE ICE') c.setHex(0xe8fbff);
-    else if (biome === 'SAFE SHALLOWS') c.setHex(0xb6e3cf);
-    else if (biome === 'TWISTY FIELDS') c.setHex(0x3c7d67);
-    else if (biome === 'LILYPAD EDGE') c.setHex(0x4d8b91);
-    else if (biome === 'CRYSTAL CAVES') c.setHex(0x4b5db8);
-    else if (biome === 'THERMAL SPIRES') c.setHex(0x8e6c4f);
-    else if (biome === 'GLACIAL SHELF') c.setHex(0xc9f7ff);
-    else if (biome === 'CRATER VOID') c.setHex(0x02111b);
-    else if (biome === 'DEEP TRENCH') c.setHex(0x09202c);
-    else c.setHex(depth > 120 ? 0x041822 : 0x173245);
+    if(biome==='SURFACE ICE') c.setHex(0xe8fbff);
+    else if(biome==='SAFE SHALLOWS') c.setHex(0xb6e3cf);
+    else if(biome==='TWISTY FIELDS') c.setHex(0x3c7d67);
+    else if(biome==='LILYPAD EDGE') c.setHex(0x4d8b91);
+    else if(biome==='CRYSTAL CAVES') c.setHex(0x4b5db8);
+    else if(biome==='THERMAL SPIRES') c.setHex(0x8e6c4f);
+    else if(biome==='GLACIAL SHELF') c.setHex(0xc9f7ff);
+    else if(biome==='CRATER VOID') c.setHex(0x02111b);
+    else if(biome==='DEEP TRENCH') c.setHex(0x09202c);
+    else c.setHex(depth>120 ? 0x041822 : 0x173245);
     let tint = clamp(depth/140,0,1);
-    c.r *= 1-tint*.1;
-    c.g *= 1-tint*.05;
-    c.b *= 1-tint*.02;
+    c.r *= 1-tint*.1; c.g *= 1-tint*.05; c.b *= 1-tint*.02;
     colors.push(c.r,c.g,c.b);
   }
 
@@ -432,10 +367,7 @@ try {
   terrainGeo.computeVertexNormals();
 
   const terrainMat = new THREE.MeshStandardMaterial({
-    vertexColors:true,
-    roughness:.95,
-    metalness:.04,
-    flatShading:true
+    vertexColors:true,roughness:.95,metalness:.04,flatShading:true
   });
 
   const terrain = new THREE.Mesh(terrainGeo, terrainMat);
@@ -465,11 +397,7 @@ try {
       return {
         g,
         m:new THREE.MeshStandardMaterial({
-          color:0xdffbff,
-          roughness:.18,
-          metalness:.12,
-          transparent:true,
-          opacity:.92
+          color:0xdffbff,roughness:.18,metalness:.12,transparent:true,opacity:.92
         })
       };
     }
@@ -491,41 +419,31 @@ try {
         rotFn?.y?.(x,z,y) ?? Math.random()*Math.PI,
         rotFn?.z?.(x,z,y) ?? 0
       );
-      let s = scaleFn ? scaleFn(x,z,y) : 1;
-      mesh.scale.setScalar(s);
+      mesh.scale.setScalar(scaleFn ? scaleFn(x,z,y) : 1);
       scene.add(mesh);
 
       interactables.push({ mesh, type:kind, baseY:y, phase:Math.random()*Math.PI*2 });
 
-      if(kind==='kelp') addCollider(x,z,2,y,y+42*s,'flora');
-      if(kind==='coral') addCollider(x,z,3.8*s,y,y+5*s,'flora');
-      if(kind==='ice') addCollider(x,z,1.5*s,y,y+12*s,'ice');
+      if(kind==='kelp') addCollider(x,z,2,y,y+42,'flora');
+      if(kind==='coral') addCollider(x,z,3.8,y,y+5,'flora');
+      if(kind==='ice') addCollider(x,z,1.5,y,y+12,'ice');
     }
   }
 
   scatterInstances('kelp', CONFIG.floraKelp,
-    (x,z,y)=>{
-      let d = getDistance2D(x,z);
-      return y < CONFIG.seaLevel-16 && y > CONFIG.terrainFloor+8 && d < 250 && d > 40;
-    },
+    (x,z,y)=>{ let d=getDistance2D(x,z); return y<CONFIG.seaLevel-16 && y>CONFIG.terrainFloor+8 && d<250 && d>40; },
     ()=>0.7+Math.random()*1.7,
     {y:()=>Math.random()*Math.PI,x:()=>0,z:()=>0}
   );
 
   scatterInstances('coral', CONFIG.floraCoral,
-    (x,z,y)=>{
-      let d = getDistance2D(x,z);
-      return y > CONFIG.seaLevel-38 && d < 180 && d > 10;
-    },
+    (x,z,y)=>{ let d=getDistance2D(x,z); return y>CONFIG.seaLevel-38 && d<180 && d>10; },
     ()=>.4+Math.random()*1.2,
     {y:()=>Math.random()*Math.PI,x:()=>Math.PI/2,z:()=>0}
   );
 
   scatterInstances('ice', CONFIG.floraIce,
-    (x,z,y)=>{
-      let d = getDistance2D(x,z);
-      return y > CONFIG.seaLevel-12 && Math.abs(z) > 160 && d < CONFIG.mapSize*.4;
-    },
+    (x,z,y)=>{ let d=getDistance2D(x,z); return y>CONFIG.seaLevel-12 && Math.abs(z)>160 && d<CONFIG.mapSize*.4; },
     ()=>.65+Math.random()*1.8,
     {y:()=>Math.random()*Math.PI,x:()=>0,z:()=>Math.random()*.2-.1}
   );
@@ -539,7 +457,7 @@ try {
       let rock = new THREE.Mesh(g,m);
       let ox = (Math.random()-.5)*size*6;
       let oz = (Math.random()-.5)*size*6;
-      rock.position.set(x+ox, getElevation(x+ox,z+oz)+s*0.35, z+oz);
+      rock.position.set(x+ox,getElevation(x+ox,z+oz)+s*0.35,z+oz);
       rock.rotation.set(Math.random()*Math.PI,Math.random()*Math.PI,Math.random()*Math.PI);
       rock.castShadow = true;
       rock.receiveShadow = true;
@@ -552,35 +470,36 @@ try {
     let x = (Math.random()-.5)*CONFIG.mapSize*.8;
     let z = (Math.random()-.5)*CONFIG.mapSize*.8;
     let y = getElevation(x,z);
-    if(y < CONFIG.seaLevel-10) addRockCluster(x,z,0.9+Math.random()*2.3,2+Math.floor(Math.random()*4),0x24343d);
+    if(y<CONFIG.seaLevel-10) addRockCluster(x,z,0.9+Math.random()*2.3,2+Math.floor(Math.random()*4),0x24343d);
   }
 
-  function spawnBiomeSpine(x,z,height,count,color){
-    let group = new THREE.Group();
-    for(let i=0;i<count;i++){
-      let h = height*(0.7+Math.random()*1.8);
-      let r = .4+Math.random()*1.2;
-      let geo = new THREE.CylinderGeometry(r*1.1,r*.7,h,7);
-      geo.translate(0,h/2,0);
-      let mat = new THREE.MeshStandardMaterial({color,roughness:.86});
-      let m = new THREE.Mesh(geo,mat);
-      m.position.set(x+(Math.random()-.5)*7, getElevation(x,z)+.1, z+(Math.random()-.5)*7);
-      m.rotation.y = Math.random()*Math.PI;
-      m.rotation.z = (Math.random()-.5)*.18;
-      group.add(m);
-      addCollider(m.position.x,m.position.z,r*1.5,m.position.y,m.position.y+h,'spire');
-    }
-    scene.add(group);
-  }
+  function makeShark(){
+    const group = new THREE.Group();
 
-  for(let i=0;i<90;i++){
-    let x = (Math.random()-.5)*CONFIG.mapSize*.65;
-    let z = (Math.random()-.5)*CONFIG.mapSize*.65;
-    let y = getElevation(x,z);
-    let d = getDistance2D(x,z);
-    if(d>90 && d<280 && y<CONFIG.seaLevel-28 && Math.random()>.45){
-      spawnBiomeSpine(x,z,18+Math.random()*28,2+Math.floor(Math.random()*3),0x8aa6af);
-    }
+    const bodyGeo = new THREE.CylinderGeometry(1.2,1.2,4,10);
+    const bodyMat = new THREE.MeshStandardMaterial({color:0x244b52,roughness:.8});
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.rotation.z = Math.PI/2;
+    group.add(body);
+
+    const nose = new THREE.SphereGeometry(1.2,12,10);
+    const capA = new THREE.Mesh(nose, bodyMat);
+    capA.position.x = 2;
+    capA.scale.set(1.05,0.9,0.9);
+    group.add(capA);
+
+    const capB = new THREE.Mesh(nose, bodyMat);
+    capB.position.x = -2;
+    capB.scale.set(1.05,0.85,0.85);
+    group.add(capB);
+
+    const tailGeo = new THREE.ConeGeometry(.55,2.7,6);
+    const tail = new THREE.Mesh(tailGeo, new THREE.MeshStandardMaterial({color:0x19343a,roughness:.85}));
+    tail.position.x = -3.2;
+    tail.rotation.z = -Math.PI/2;
+    group.add(tail);
+
+    return group;
   }
 
   function makeFauna(kind){
@@ -599,19 +518,9 @@ try {
       group.add(body,wing1,wing2);
       return group;
     }
-    if(kind==='shark'){
-      let g = new THREE.CapsuleGeometry(1.2,4,5,10);
-      let m = new THREE.MeshStandardMaterial({color:0x244b52,roughness:.8});
-      let body = new THREE.Mesh(g,m);
-      body.rotation.z = Math.PI/2;
-      let tail = new THREE.ConeGeometry(.55,2.7,6);
-      let t = new THREE.Mesh(tail,new THREE.MeshStandardMaterial({color:0x19343a}));
-      t.position.x = -3.2;
-      t.rotation.z = -Math.PI/2;
-      let group = new THREE.Group();
-      group.add(body,t);
-      return group;
-    }
+
+    if(kind==='shark') return makeShark();
+
     if(kind==='peng'){
       let a = new THREE.Mesh(new THREE.SphereGeometry(.65,12,10),new THREE.MeshStandardMaterial({color:0x222222,roughness:1}));
       let b = new THREE.Mesh(new THREE.SphereGeometry(.55,12,10),new THREE.MeshStandardMaterial({color:0xf1f5f9,roughness:.9}));
@@ -623,6 +532,7 @@ try {
       g.add(a,b,beak);
       return g;
     }
+
     return new THREE.Mesh(new THREE.SphereGeometry(1,8,8),new THREE.MeshStandardMaterial({color:0xffffff}));
   }
 
@@ -632,28 +542,26 @@ try {
     mesh.rotation.y = Math.random()*Math.PI;
     scene.add(mesh);
     fauna.push({
-      mesh,
-      kind,
-      home:{x,y,z},
+      mesh,kind,home:{x,y,z},
       vel:new THREE.Vector3((Math.random()-.5)*.04,0,(Math.random()-.5)*.04),
       phase:Math.random()*Math.PI*2
     });
   }
 
   for(let i=0;i<48;i++){
-    let x = (Math.random()-.5)*CONFIG.mapSize*.7;
-    let z = (Math.random()-.5)*CONFIG.mapSize*.7;
-    let y = getElevation(x,z)-8;
-    if(y < CONFIG.seaLevel-12 && y > CONFIG.terrainFloor+18){
+    let x=(Math.random()-.5)*CONFIG.mapSize*.7;
+    let z=(Math.random()-.5)*CONFIG.mapSize*.7;
+    let y=getElevation(x,z)-8;
+    if(y<CONFIG.seaLevel-12 && y>CONFIG.terrainFloor+18){
       addFauna(Math.random()>.7?'shark':'glider',x,z,y);
     }
   }
 
   for(let i=0;i<16;i++){
-    let x = (Math.random()-.5)*CONFIG.mapSize*.35;
-    let z = (Math.random()-.5)*CONFIG.mapSize*.35;
-    let y = CONFIG.seaLevel+2;
-    if(getElevation(x,z) > CONFIG.seaLevel-8) addFauna('peng',x,z,y);
+    let x=(Math.random()-.5)*CONFIG.mapSize*.35;
+    let z=(Math.random()-.5)*CONFIG.mapSize*.35;
+    let y=CONFIG.seaLevel+2;
+    if(getElevation(x,z)>CONFIG.seaLevel-8) addFauna('peng',x,z,y);
   }
 
   const surfaceGeo = new THREE.PlaneGeometry(CONFIG.mapSize,CONFIG.mapSize,40,40);
@@ -675,12 +583,12 @@ try {
   scene.add(iceSheet);
 
   const dustGeo = new THREE.BufferGeometry();
-  const dustPos = new Float32Array(CONFIG.particles * 3);
+  const dustPos = new Float32Array(CONFIG.particles*3);
   for(let i=0;i<CONFIG.particles;i++){
-    let idx = i*3;
-    dustPos[idx] = (Math.random()-.5)*900;
-    dustPos[idx+1] = Math.random()*260-120;
-    dustPos[idx+2] = (Math.random()-.5)*900;
+    let idx=i*3;
+    dustPos[idx]=(Math.random()-.5)*900;
+    dustPos[idx+1]=Math.random()*260-120;
+    dustPos[idx+2]=(Math.random()-.5)*900;
   }
   dustGeo.setAttribute('position',new THREE.BufferAttribute(dustPos,3));
   const dustMat = new THREE.PointsMaterial({
@@ -692,10 +600,10 @@ try {
   const microGeo = new THREE.BufferGeometry();
   const microPos = new Float32Array(18000*3);
   for(let i=0;i<18000;i++){
-    let idx = i*3;
-    microPos[idx] = (Math.random()-.5)*700;
-    microPos[idx+1] = Math.random()*260-120;
-    microPos[idx+2] = (Math.random()-.5)*700;
+    let idx=i*3;
+    microPos[idx]=(Math.random()-.5)*700;
+    microPos[idx+1]=Math.random()*260-120;
+    microPos[idx+2]=(Math.random()-.5)*700;
   }
   microGeo.setAttribute('position',new THREE.BufferAttribute(microPos,3));
   const microMat = new THREE.PointsMaterial({ color:0xd9f7ff,size:.16,transparent:true,opacity:.25 });
@@ -703,34 +611,23 @@ try {
   scene.add(micro);
 
   const player = {
-    velocity: new THREE.Vector3(),
-    radius: CONFIG.playerRadius,
-    o2: 100,
-    maxO2: 100,
-    hp: 100,
-    maxHp: 100,
-    core: 100,
-    maxCore: 100,
-    speed: .62,
-    scanTarget: null,
-    scanTimer: 0,
-    scanActive: false,
-    moveNoise: 0
+    velocity:new THREE.Vector3(),radius:CONFIG.playerRadius,o2:100,maxO2:100,hp:100,maxHp:100,core:100,maxCore:100,
+    speed:.62,scanTarget:null,scanTimer:0,scanActive:false,moveNoise:0
   };
 
   const keys = { w:false,a:false,s:false,d:false,space:false,shift:false,e:false };
   let cameraRotation = new THREE.Euler(0,0,0,'YXZ');
 
-  renderer.domElement.addEventListener('click', ()=>renderer.domElement.requestPointerLock());
-  document.addEventListener('mousemove', (e) => {
-    if(document.pointerLockElement === renderer.domElement){
-      cameraRotation.y -= e.movementX * 0.0021;
-      cameraRotation.x -= e.movementY * 0.0021;
-      cameraRotation.x = Math.max(-Math.PI/2.15, Math.min(Math.PI/2.15, cameraRotation.x));
+  renderer.domElement.addEventListener('click',()=>renderer.domElement.requestPointerLock());
+  document.addEventListener('mousemove',(e)=>{
+    if(document.pointerLockElement===renderer.domElement){
+      cameraRotation.y -= e.movementX*0.0021;
+      cameraRotation.x -= e.movementY*0.0021;
+      cameraRotation.x = Math.max(-Math.PI/2.15,Math.min(Math.PI/2.15,cameraRotation.x));
     }
   });
 
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown',(e)=>{
     if(e.code==='KeyW') keys.w = true;
     if(e.code==='KeyA') keys.a = true;
     if(e.code==='KeyS') keys.s = true;
@@ -738,18 +635,16 @@ try {
     if(e.code==='Space') keys.space = true;
     if(e.code==='ShiftLeft') keys.shift = true;
     if(e.code==='KeyE') keys.e = true;
-
     if(['Digit1','Digit2','Digit3','Digit4','Digit5'].includes(e.code)){
       const n = parseInt(e.key,10)-1;
       document.querySelectorAll('.inv-slot').forEach(el=>el.classList.remove('active'));
       const slots = document.querySelectorAll('.inv-slot');
       if(slots[n]) slots[n].classList.add('active');
     }
-
     if(e.code==='KeyE' && player.scanTarget) castScan();
   });
 
-  document.addEventListener('keyup', (e) => {
+  document.addEventListener('keyup',(e)=>{
     if(e.code==='KeyW') keys.w = false;
     if(e.code==='KeyA') keys.a = false;
     if(e.code==='KeyS') keys.s = false;
@@ -790,12 +685,9 @@ try {
   }
 
   function updateBiomeAndTemp(){
-    const y = camera.position.y;
-    const x = camera.position.x;
-    const z = camera.position.z;
+    const y = camera.position.y, x = camera.position.x, z = camera.position.z;
     const depth = getDepthFromSurface(y);
     const biome = getBiome(x,z,y);
-
     document.getElementById('biome-val').innerText = biome;
     document.getElementById('depth-val').innerText = Math.max(0,Math.round(depth)) + 'm';
     document.getElementById('coord-x').innerText = Math.round(x);
@@ -806,7 +698,6 @@ try {
     const surfaceWarm = smoothstep(0, 16, depth);
     const thermal = smoothstep(70, 180, getDistance2D(x, z));
     const temp = tempBase - coldZone * 2.8 + thermal * 1.6 + surfaceWarm * 1.2;
-
     document.getElementById('temp-val').innerText = (temp >= 0 ? '+' : '') + temp.toFixed(1) + 'C';
     return { biome, temp, depth };
   }
@@ -816,12 +707,10 @@ try {
 
     const { f, r } = getForwardRight();
     const moveDir = new THREE.Vector3();
-
     if(keys.w) moveDir.add(f);
     if(keys.s) moveDir.addScaledVector(f,-1);
     if(keys.a) moveDir.addScaledVector(r,-1);
     if(keys.d) moveDir.add(r);
-
     if(moveDir.lengthSq() > 0) moveDir.normalize();
 
     const targetVel = moveDir.multiplyScalar(player.speed);
@@ -831,47 +720,28 @@ try {
     if(keys.shift) player.velocity.y -= 0.045;
     player.velocity.y *= 0.86;
 
-    player.moveNoise = Math.min(1, player.moveNoise + moveDir.length() * dt * 2.5);
-    player.velocity.x += Math.sin(performance.now()*0.0012) * 0.0005 * player.moveNoise;
-    player.velocity.z += Math.cos(performance.now()*0.0011) * 0.0005 * player.moveNoise;
-    player.moveNoise *= 0.98;
-
     const nextPos = camera.position.clone().add(player.velocity);
     resolveCollisions(nextPos, player.velocity);
 
     const groundHeight = getElevation(nextPos.x, nextPos.z) + 1.8;
-    if(nextPos.y < groundHeight){
-      nextPos.y = groundHeight;
-      player.velocity.y = 0;
-    }
-    if(nextPos.y > CONFIG.seaLevel + 6){
-      nextPos.y = CONFIG.seaLevel + 6;
-      player.velocity.y = 0;
-    }
+    if(nextPos.y < groundHeight){ nextPos.y = groundHeight; player.velocity.y = 0; }
+    if(nextPos.y > CONFIG.seaLevel + 6){ nextPos.y = CONFIG.seaLevel + 6; player.velocity.y = 0; }
 
     camera.position.copy(nextPos);
 
     const { biome, temp, depth } = updateBiomeAndTemp();
-
     if(depth < 2) player.o2 = Math.min(player.maxO2, player.o2 + CONFIG.oxygenSurfaceRegen * dt);
     else player.o2 -= CONFIG.oxygenDrain * dt;
 
     if(temp < 0) player.core -= CONFIG.coldDrain * dt * (1 + (-temp) * 0.08);
     else player.core = Math.min(player.maxCore, player.core + CONFIG.thermalRegen * dt * 0.12);
 
-    document.getElementById('warning-overlay').style.opacity = player.o2 <= 0 ? 1 : 0;
-
-    if(player.o2 <= 0){
-      player.o2 = 0;
-      player.hp -= 5 * dt;
-    }
+    if(player.o2 <= 0){ player.o2 = 0; player.hp -= 5 * dt; document.getElementById('warning-overlay').style.opacity = 1; }
+    else document.getElementById('warning-overlay').style.opacity = 0;
 
     if(player.hp <= 0 || player.core <= 0){
       camera.position.set(0, CONFIG.seaLevel - 5, 0);
-      player.hp = player.maxHp;
-      player.o2 = player.maxO2;
-      player.core = player.maxCore;
-      player.velocity.set(0,0,0);
+      player.hp = player.maxHp; player.o2 = player.maxO2; player.core = player.maxCore; player.velocity.set(0,0,0);
     }
 
     document.getElementById('o2-fill').style.width = (player.o2 / player.maxO2 * 100) + '%';
@@ -897,10 +767,7 @@ try {
       if(d < bestDist && d < 18){
         const dir = o.mesh.position.clone().sub(camera.position).normalize();
         const dot = dir.dot(f.clone().normalize());
-        if(dot > 0.92){
-          best = o;
-          bestDist = d;
-        }
+        if(dot > 0.92){ best = o; bestDist = d; }
       }
     }
     player.scanTarget = best;
@@ -913,10 +780,8 @@ try {
       const p = m.position;
 
       if(o.kind === 'glider'){
-        const driftX = Math.sin(time * 0.4 + o.phase) * 0.01;
-        const driftZ = Math.cos(time * 0.35 + o.phase) * 0.01;
-        p.x += o.vel.x + driftX;
-        p.z += o.vel.z + driftZ;
+        p.x += o.vel.x + Math.sin(time * 0.4 + o.phase) * 0.01;
+        p.z += o.vel.z + Math.cos(time * 0.35 + o.phase) * 0.01;
         p.y += Math.sin(time * 1.1 + o.phase) * 0.03;
         const h = getElevation(p.x,p.z);
         p.y = Math.max(h + 3, Math.min(CONFIG.seaLevel - 5, p.y));
@@ -940,7 +805,7 @@ try {
       } else if(o.kind === 'peng'){
         p.x += Math.sin(time * 0.35 + o.phase) * 0.01;
         p.z += Math.cos(time * 0.28 + o.phase) * 0.01;
-        p.y = getElevation(p.x,p.z) + 1.3 + Math.sin(time * 2 + o.phase) * .05;
+        p.y = getElevation(p.x,p.z) + 1.3 + Math.sin(time * 2 + o.phase) * 0.05;
         m.rotation.y += Math.sin(time * 0.4 + o.phase) * 0.01;
       }
 
@@ -952,13 +817,13 @@ try {
   function updateInteractables(time){
     for(let i=0;i<interactables.length;i++){
       const o = interactables[i];
-      if(o.type === 'kelp'){
+      if(o.type==='kelp'){
         o.mesh.rotation.z = Math.sin(time * 0.8 + o.phase) * 0.08;
         o.mesh.rotation.y += Math.sin(time * 0.24 + o.phase) * 0.002;
-      } else if(o.type === 'coral'){
+      } else if(o.type==='coral'){
         o.mesh.rotation.y += 0.001;
         o.mesh.position.y = o.baseY + 1.2 + Math.sin(time * 0.9 + o.phase) * 0.06;
-      } else if(o.type === 'ice'){
+      } else if(o.type==='ice'){
         o.mesh.rotation.y += 0.0004;
         o.mesh.position.y = o.baseY + Math.sin(time * 0.6 + o.phase) * 0.04;
       }
@@ -980,20 +845,78 @@ try {
     iceSheetMat.opacity = .2 + .04 * Math.sin(t * .6);
   }
 
+  function makeShark(){
+    const group = new THREE.Group();
+    const bodyGeo = new THREE.CylinderGeometry(1.2,1.2,4,10);
+    const bodyMat = new THREE.MeshStandardMaterial({color:0x244b52,roughness:.8});
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.rotation.z = Math.PI/2;
+    group.add(body);
+
+    const nose = new THREE.SphereGeometry(1.2,12,10);
+    const capA = new THREE.Mesh(nose, bodyMat);
+    capA.position.x = 2;
+    capA.scale.set(1.05,0.9,0.9);
+    group.add(capA);
+
+    const capB = new THREE.Mesh(nose, bodyMat);
+    capB.position.x = -2;
+    capB.scale.set(1.05,0.85,0.85);
+    group.add(capB);
+
+    const tailGeo = new THREE.ConeGeometry(.55,2.7,6);
+    const tail = new THREE.Mesh(tailGeo, new THREE.MeshStandardMaterial({color:0x19343a,roughness:.85}));
+    tail.position.x = -3.2;
+    tail.rotation.z = -Math.PI/2;
+    group.add(tail);
+
+    return group;
+  }
+
+  function makeFauna(kind){
+    if(kind==='glider'){
+      let g = new THREE.SphereGeometry(1.2,16,12);
+      let m = new THREE.MeshStandardMaterial({color:0x7ae7ff,emissive:0x1a4b5a,roughness:.25,metalness:.05});
+      let body = new THREE.Mesh(g,m);
+      let wingGeo = new THREE.ConeGeometry(.4,3,5);
+      let wingMat = new THREE.MeshStandardMaterial({color:0xb7f0ff,emissive:0x103040,roughness:.35});
+      let wing1 = new THREE.Mesh(wingGeo,wingMat);
+      wing1.rotation.z = Math.PI/2;
+      wing1.position.set(1.2,0,0);
+      let wing2 = wing1.clone();
+      wing2.position.x = -1.2;
+      let group = new THREE.Group();
+      group.add(body,wing1,wing2);
+      return group;
+    }
+    if(kind==='shark') return makeShark();
+    if(kind==='peng'){
+      let a = new THREE.Mesh(new THREE.SphereGeometry(.65,12,10),new THREE.MeshStandardMaterial({color:0x222222,roughness:1}));
+      let b = new THREE.Mesh(new THREE.SphereGeometry(.55,12,10),new THREE.MeshStandardMaterial({color:0xf1f5f9,roughness:.9}));
+      b.position.y = .25;
+      let beak = new THREE.Mesh(new THREE.ConeGeometry(.14,.5,5),new THREE.MeshStandardMaterial({color:0xf59e0b}));
+      beak.rotation.x = Math.PI/2;
+      beak.position.set(0,.1,.62);
+      let g = new THREE.Group();
+      g.add(a,b,beak);
+      return g;
+    }
+    return new THREE.Mesh(new THREE.SphereGeometry(1,8,8),new THREE.MeshStandardMaterial({color:0xffffff}));
+  }
+
   function castScan(){
     if(player.scanActive || !player.scanTarget) return;
     player.scanActive = true;
     const start = performance.now();
     const target = player.scanTarget;
     document.getElementById('pda-log').innerText = 'Scanning target...';
-
     function tick(){
       const pct = (performance.now() - start) / (CONFIG.scanTime * 1000) * 100;
-      updateScanUI(true, pct);
+      updateScanUI(true,pct);
       if(pct < 100 && player.scanTarget === target){
         requestAnimationFrame(tick);
       } else {
-        updateScanUI(false, 0);
+        updateScanUI(false,0);
         player.scanActive = false;
         if(player.scanTarget === target){
           const name = target.kind === 'shark' ? 'Apex predator' : 'Bioluminescent fauna';
@@ -1021,18 +944,18 @@ try {
     renderer.render(scene,camera);
   }
 
-  window.addEventListener('resize', () => {
+  window.addEventListener('resize',()=>{
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth,window.innerHeight);
   });
 
   animate();
-} catch (err) {
+} catch(err){
   const log = document.getElementById('error-log');
-  if (log) log.textContent = String(err && err.stack ? err.stack : err);
+  if(log) log.textContent = String(err && err.stack ? err.stack : err);
   const loading = document.getElementById('loading');
-  if (loading) loading.style.opacity = 1;
+  if(loading) loading.style.opacity = 1;
 }
 </script>
 </body>
